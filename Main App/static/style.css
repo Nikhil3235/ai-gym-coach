@@ -1,0 +1,982 @@
+/* ═══════════════════════════════════════════════════════════════
+   AI GYM COACH — Main App Ultra-Premium Stylesheet
+   Built by NIKHIL MALI
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── IMPORTS ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
+/* ── COLOR TOKENS ── */
+:root {
+  --bg-primary: #030306;
+  --bg-secondary: #07070d;
+  --surface: rgba(12, 12, 20, 0.85);
+  --surface-solid: #0c0c14;
+  --surface-hover: rgba(20, 20, 35, 0.9);
+  --glass: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.06);
+
+  --amber: #f5a623;
+  --amber-light: #ffd06b;
+  --amber-dim: #b97a18;
+  --amber-glow: rgba(245, 166, 35, 0.2);
+
+  --cyan: #00d4ff;
+  --cyan-dim: #0099bb;
+  --cyan-glow: rgba(0, 212, 255, 0.15);
+
+  --purple: #a855f7;
+  --purple-glow: rgba(168, 85, 247, 0.15);
+
+  --green: #22c55e;
+  --green-glow: rgba(34, 197, 94, 0.15);
+
+  --red: #ef4444;
+
+  --border: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.14);
+
+  --text: #eaeaea;
+  --text-secondary: #7a7a8e;
+  --muted: #45455a;
+
+  --radius: 14px;
+  --radius-sm: 10px;
+  --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Orbitron', 'Inter', sans-serif;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   KEYFRAME ANIMATIONS
+═══════════════════════════════════════════════════════════════ */
+
+@keyframes shimmer-line {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes rotate-gradient {
+  0% { --angle: 0deg; }
+  100% { --angle: 360deg; }
+}
+
+@keyframes slide-in-up {
+  0% { opacity: 0; transform: translateY(24px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes border-dance {
+  0% { border-color: rgba(245, 166, 35, 0.2); }
+  33% { border-color: rgba(0, 212, 255, 0.2); }
+  66% { border-color: rgba(168, 85, 247, 0.2); }
+  100% { border-color: rgba(245, 166, 35, 0.2); }
+}
+
+@keyframes text-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes breathe {
+  0%, 100% { box-shadow: 0 0 20px rgba(245, 166, 35, 0.05); }
+  50% { box-shadow: 0 0 40px rgba(245, 166, 35, 0.12); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes orb-float-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(80px, -40px) scale(1.1); }
+  50% { transform: translate(-30px, 60px) scale(0.95); }
+  75% { transform: translate(-60px, -20px) scale(1.05); }
+}
+
+@keyframes orb-float-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(-70px, 50px) scale(0.9); }
+  50% { transform: translate(50px, -30px) scale(1.1); }
+  75% { transform: translate(20px, 40px) scale(1); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GLOBAL THEME — Deep space background with ambient orbs
+═══════════════════════════════════════════════════════════════ */
+
+.stApp {
+  background: var(--bg-primary) !important;
+  color: var(--text) !important;
+  min-height: 100vh;
+}
+
+/* Floating ambient orbs */
+.stApp::before {
+  content: '';
+  position: fixed;
+  top: -150px;
+  left: -100px;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 166, 35, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: orb-float-1 20s ease-in-out infinite;
+  filter: blur(60px);
+}
+
+.stApp::after {
+  content: '';
+  position: fixed;
+  bottom: -200px;
+  right: -150px;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: orb-float-2 25s ease-in-out infinite;
+  filter: blur(80px);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--amber-dim), var(--cyan-dim));
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--amber);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SIDEBAR — Glassmorphism with animated border
+═══════════════════════════════════════════════════════════════ */
+
+[data-testid="stSidebar"] {
+  background: var(--bg-secondary) !important;
+  border-right: 1px solid var(--glass-border) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Sidebar glassmorphism gradient overlay */
+[data-testid="stSidebar"]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg,
+      rgba(245, 166, 35, 0.04) 0%,
+      transparent 30%,
+      rgba(0, 212, 255, 0.02) 70%,
+      rgba(168, 85, 247, 0.03) 100%
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Animated shimmer line at top of sidebar */
+[data-testid="stSidebar"]::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--amber), var(--cyan), var(--purple), var(--amber));
+  background-size: 300% 100%;
+  animation: shimmer-line 4s linear infinite;
+  z-index: 10;
+}
+
+[data-testid="stSidebar"] > div {
+  position: relative;
+  z-index: 1;
+}
+
+/* Sidebar title — Orbitron display font with gradient */
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h1 {
+  font-family: var(--font-display) !important;
+  background: linear-gradient(135deg, var(--amber) 0%, var(--amber-light) 40%, var(--cyan) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 1.2rem !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  animation: slide-in-up 0.8s ease-out;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TYPOGRAPHY
+═══════════════════════════════════════════════════════════════ */
+
+.block-container,
+.block-container * {
+  font-family: var(--font-body) !important;
+}
+
+/* Main title — animated gradient text */
+.block-container [data-testid="stMarkdownContainer"] h1 {
+  font-family: var(--font-display) !important;
+  background: linear-gradient(135deg, #ffffff 10%, var(--amber) 45%, var(--cyan) 80%, var(--purple) 100%);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2.2rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  animation: gradient-shift 6s ease-in-out infinite, slide-in-up 0.8s ease-out;
+}
+
+/* Subtitle */
+.block-container [data-testid="stMarkdownContainer"] h4 {
+  color: var(--text-secondary) !important;
+  font-weight: 400 !important;
+  font-size: 0.95rem !important;
+  letter-spacing: 0.02em;
+  line-height: 1.6;
+  animation: slide-in-up 1s ease-out;
+}
+
+/* Bold text — amber accent */
+[data-testid="stMarkdownContainer"] strong {
+  font-family: var(--font-body) !important;
+  color: var(--amber) !important;
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════════════════════════ */
+
+.block-container {
+  padding: 48px 2.5rem !important;
+  max-width: 820px !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BUTTONS — Neon-glass with 3D depth
+═══════════════════════════════════════════════════════════════ */
+
+button,
+.stButton button,
+.stDownloadButton button,
+.MuiBox-root button {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  color: var(--text) !important;
+  letter-spacing: 0.04em;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition) !important;
+}
+
+/* Glass shimmer on hover */
+button::before,
+.stButton button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  transition: left 0.5s ease;
+  z-index: 0;
+}
+
+button:hover::before,
+.stButton button:hover::before {
+  left: 100%;
+}
+
+button:hover,
+.stButton button:hover,
+.stDownloadButton button:hover {
+  border-color: rgba(245, 166, 35, 0.35) !important;
+  background: var(--surface-hover) !important;
+  box-shadow:
+    0 0 25px var(--amber-glow),
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+  transform: translateY(-2px);
+}
+
+button:active,
+.stButton button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* PRIMARY BUTTON — Amber gradient with 3D glow */
+.stButton button[kind="primary"],
+button[data-testid="stBaseButton-primary"] {
+  background: linear-gradient(135deg, var(--amber) 0%, var(--amber-light) 50%, #ffb347 100%) !important;
+  color: #000 !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  border: none !important;
+  text-transform: uppercase;
+  font-family: var(--font-display) !important;
+  font-size: 0.85rem !important;
+  box-shadow:
+    0 4px 15px var(--amber-glow),
+    0 0 30px rgba(245, 166, 35, 0.1) !important;
+}
+
+button[data-testid="stBaseButton-primary"]:hover {
+  box-shadow:
+    0 8px 40px rgba(245, 166, 35, 0.35),
+    0 0 60px rgba(245, 166, 35, 0.15) !important;
+  transform: translateY(-3px) scale(1.01);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INPUTS — Neon focus states
+═══════════════════════════════════════════════════════════════ */
+
+input,
+textarea,
+[data-testid="stSelectbox"] > div > div,
+[data-baseweb="select"] > div,
+[data-baseweb="popover"] ul,
+[data-baseweb="menu"] {
+  border-radius: var(--radius) !important;
+  font-family: var(--font-body) !important;
+  background: var(--surface-solid) !important;
+  border-color: var(--border) !important;
+  transition: all var(--transition) !important;
+}
+
+input:focus,
+textarea:focus {
+  border-color: var(--amber) !important;
+  box-shadow: 0 0 0 3px var(--amber-glow), 0 0 20px rgba(245, 166, 35, 0.08) !important;
+  outline: none !important;
+}
+
+p, li, code {
+  font-family: var(--font-body) !important;
+}
+
+/* Number input with animated border */
+[data-testid="stNumberInputContainer"] {
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  transition: all var(--transition) !important;
+}
+
+[data-testid="stNumberInputContainer"]:focus-within {
+  border-color: var(--cyan) !important;
+  box-shadow: 0 0 0 3px var(--cyan-glow), 0 0 20px rgba(0, 212, 255, 0.08) !important;
+}
+
+/* Selectbox hover */
+[data-testid="stSelectbox"]:hover [data-baseweb="select"] > div {
+  border-color: var(--border-hover) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   METRICS — 3D glassmorphism cards with animated accents
+═══════════════════════════════════════════════════════════════ */
+
+[data-testid="stMetric"] {
+  background: var(--surface) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border) !important;
+  padding: 1.3rem 1.5rem !important;
+  border-radius: var(--radius) !important;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition) !important;
+  animation: slide-in-up 0.6s ease-out backwards;
+}
+
+/* Animated gradient top border */
+[data-testid="stMetric"]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--amber), var(--cyan), var(--purple), var(--amber));
+  background-size: 300% 100%;
+  animation: shimmer-line 3s linear infinite;
+}
+
+/* Inner ambient glow */
+[data-testid="stMetric"]::after {
+  content: '';
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--amber-glow) 0%, transparent 70%);
+  pointer-events: none;
+  opacity: 0.5;
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+[data-testid="stMetric"]:hover {
+  border-color: var(--border-hover) !important;
+  background: var(--surface-hover) !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(245, 166, 35, 0.06) !important;
+  transform: translateY(-3px);
+}
+
+[data-testid="stMetric"] div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Metric value — big gradient number */
+[data-testid="stMetricValue"] {
+  font-family: var(--font-display) !important;
+  font-size: 1.7rem !important;
+  font-weight: 700 !important;
+  background: linear-gradient(135deg, #fff 30%, var(--amber) 70%, var(--cyan) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.02em;
+}
+
+/* Metric label — muted uppercase */
+[data-testid="stMetricLabel"] {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  opacity: 0.5;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+[data-testid="stMetric"] div label p {
+  font-size: 12px !important;
+  letter-spacing: 0.08em;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CONTAINERS — Glassmorphism treatment
+═══════════════════════════════════════════════════════════════ */
+
+.stContainer,
+.stExpander,
+.stTabs,
+.stColumns,
+.stPopover,
+.stAlertContainer,
+.stStatusContainer,
+.stMetric,
+.stTable,
+.stDataFrame,
+.stForm,
+.stSelectbox,
+[data-baseweb="select"] > div,
+[data-testid="stForm"],
+[data-testid="stMetric"],
+[data-testid="stNumberInputContainer"],
+[data-testid="stDataFrameColumnMenu"],
+[data-testid="stHeadingWithActionElements"],
+[data-testid="stCaptionContainer"] p,
+[data-testid="stSidebarNavLink"],
+[data-testid="stMarkdownContainer"] h3,
+[data-baseweb="popover"],
+[data-baseweb="menu"],
+div[role="menu"],
+div[role="menuitem"] {
+  border-radius: var(--radius) !important;
+  font-family: var(--font-body) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ALERT BOXES — Neon-bordered info & success
+═══════════════════════════════════════════════════════════════ */
+
+/* Info box */
+[data-testid="stAlertContentInfo"] {
+  background: rgba(245, 166, 35, 0.04) !important;
+  border: 1px solid rgba(245, 166, 35, 0.15) !important;
+  border-radius: var(--radius) !important;
+  border-left: 3px solid var(--amber) !important;
+  backdrop-filter: blur(8px);
+  animation: slide-in-up 0.5s ease-out;
+}
+
+[data-testid="stAlertContentInfo"] p {
+  color: var(--text) !important;
+}
+
+/* Success box (Coach feedback) — cyan neon glow */
+[data-testid="stAlertContentSuccess"] {
+  background: rgba(0, 212, 255, 0.04) !important;
+  border: 1px solid rgba(0, 212, 255, 0.15) !important;
+  border-radius: var(--radius) !important;
+  border-left: 3px solid var(--cyan) !important;
+  backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+  animation: slide-in-up 0.5s ease-out;
+}
+
+/* Coach box inner glow */
+[data-testid="stAlertContentSuccess"]::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--cyan-glow) 0%, transparent 70%);
+  pointer-events: none;
+  animation: pulse-glow 2.5s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TABLE — Dark glass with neon headers
+═══════════════════════════════════════════════════════════════ */
+
+.stDataFrame,
+.stDataFrame div,
+.stDataFrameGlideDataEditor {
+  border-radius: var(--radius) !important;
+  font-family: var(--font-body) !important;
+}
+
+.stTable table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.stTable th {
+  background: var(--surface-solid) !important;
+  color: var(--amber) !important;
+  text-transform: uppercase;
+  font-family: var(--font-display) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.14em;
+  padding: 16px 18px !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.stTable td {
+  background: var(--bg-secondary) !important;
+  padding: 14px 18px !important;
+  border-bottom: 1px solid var(--border) !important;
+  font-size: 0.9rem;
+  transition: all var(--transition);
+}
+
+.stTable tr:hover td {
+  background: var(--surface-solid) !important;
+  color: var(--amber-light);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INTERACTIVE ELEMENTS
+═══════════════════════════════════════════════════════════════ */
+
+.stTextInput,
+.stTextArea,
+.stNumberInput,
+.stSlider,
+.stMultiselect,
+.stRadio,
+.stCheckbox,
+.stToggle,
+.stFileUploader,
+.stColorPicker,
+.stDateInput,
+.stTimeInput,
+.stCameraInput,
+[data-testid="stTextInput"] > div,
+[data-testid="stButton"] button,
+[data-testid="stBaseButton-secondaryFormSubmit"],
+[data-testid="stStatusWidget"] {
+  border-radius: var(--radius) !important;
+  font-family: var(--font-body) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DIVIDER — Animated gradient line
+═══════════════════════════════════════════════════════════════ */
+
+[data-testid="stMarkdownContainer"] hr,
+.stDivider {
+  border: none !important;
+  height: 1px !important;
+  background: linear-gradient(90deg, transparent 0%, var(--amber-dim) 20%, var(--cyan-dim) 50%, var(--purple) 80%, transparent 100%) !important;
+  background-size: 200% 100%;
+  animation: shimmer-line 6s linear infinite;
+  margin: 2rem 0 !important;
+  opacity: 0.6;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WEBCAM / VIDEO — Cinematic frame with neon border
+═══════════════════════════════════════════════════════════════ */
+
+video {
+  border-radius: var(--radius) !important;
+  border: 2px solid rgba(245, 166, 35, 0.25) !important;
+  box-shadow:
+    0 0 40px var(--amber-glow),
+    0 0 80px rgba(0, 212, 255, 0.05),
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    inset 0 0 60px rgba(0, 0, 0, 0.2) !important;
+  animation: breathe 4s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CAPTION — User login badge
+═══════════════════════════════════════════════════════════════ */
+
+[data-testid="stCaptionContainer"] p {
+  color: var(--amber) !important;
+  font-size: 12px !important;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 6px 14px;
+  background: rgba(245, 166, 35, 0.06);
+  border: 1px solid rgba(245, 166, 35, 0.12);
+  border-radius: 20px;
+  display: inline-block;
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SUBHEADER — Section titles with underline accent
+═══════════════════════════════════════════════════════════════ */
+
+[data-testid="stMarkdownContainer"] h3 {
+  color: var(--text) !important;
+  font-family: var(--font-display) !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  position: relative;
+  padding-bottom: 10px;
+  animation: slide-in-up 0.6s ease-out;
+}
+
+[data-testid="stMarkdownContainer"] h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 50px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--amber), var(--cyan));
+  border-radius: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FORM — Workout setup card with animated border
+═══════════════════════════════════════════════════════════════ */
+
+.stForm,
+[data-testid="stForm"] {
+  margin-top: 1.5rem !important;
+  padding: 1.8rem 1.5rem !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius) !important;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  animation: border-dance 6s ease-in-out infinite;
+}
+
+/* Animated shimmer top line */
+.stForm::before,
+[data-testid="stForm"]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--amber), var(--cyan), var(--purple), var(--amber));
+  background-size: 300% 100%;
+  animation: shimmer-line 3s linear infinite;
+}
+
+/* Bottom accent line */
+.stForm::after,
+[data-testid="stForm"]::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--amber-dim), transparent);
+  opacity: 0.4;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WORKOUT PLACEHOLDER — Premium empty state with particles
+═══════════════════════════════════════════════════════════════ */
+
+.block-container div[style*="border: 10px dashed"] {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius) !important;
+  background: var(--surface) !important;
+  backdrop-filter: blur(12px);
+  padding: 72px 48px !important;
+  position: relative;
+  overflow: hidden;
+  animation: breathe 5s ease-in-out infinite;
+}
+
+/* Radial ambient glow */
+.block-container div[style*="border: 10px dashed"]::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--amber-glow) 0%, transparent 70%);
+  pointer-events: none;
+  opacity: 0.6;
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+/* Spinning ring accent */
+.block-container div[style*="border: 10px dashed"]::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  transform: translate(-50%, -50%);
+  border: 1px dashed rgba(245, 166, 35, 0.12);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: spin-slow 30s linear infinite;
+}
+
+.block-container div[style*="border: 10px dashed"] h2 {
+  color: var(--text) !important;
+  font-family: var(--font-display) !important;
+  font-size: 1.3rem !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
+}
+
+.block-container div[style*="border: 10px dashed"] p {
+  color: var(--text-secondary) !important;
+  font-size: 0.95rem !important;
+  line-height: 1.7;
+  position: relative;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SIDEBAR — Subheader & Metrics polish
+═══════════════════════════════════════════════════════════════ */
+
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h3 {
+  color: var(--amber) !important;
+  font-family: var(--font-display) !important;
+  font-size: 0.7rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h3::after {
+  display: none;
+}
+
+/* Sidebar metrics — subtle glass cards */
+[data-testid="stSidebar"] [data-testid="stMetric"] {
+  background: rgba(245, 166, 35, 0.03) !important;
+  border: 1px solid rgba(245, 166, 35, 0.1) !important;
+  transition: all var(--transition);
+}
+
+[data-testid="stSidebar"] [data-testid="stMetric"]:hover {
+  background: rgba(245, 166, 35, 0.06) !important;
+  border-color: rgba(245, 166, 35, 0.2) !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stMetricValue"] {
+  font-size: 1.4rem !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LOADING / SPINNER
+═══════════════════════════════════════════════════════════════ */
+
+[data-testid="stStatusWidget"] {
+  background: var(--surface) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius) !important;
+  backdrop-filter: blur(8px);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SMOOTH TRANSITIONS — Global polish
+═══════════════════════════════════════════════════════════════ */
+
+* {
+  transition-property: background-color, border-color, box-shadow, color, opacity, transform;
+  transition-duration: 0.25s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Don't transition animations */
+[data-testid="stMetric"],
+video,
+.stForm,
+[data-testid="stForm"] {
+  transition-property: background-color, border-color, box-shadow, color, transform;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SIDEBAR TOGGLE BUTTON — Always visible & colorful
+═══════════════════════════════════════════════════════════════ */
+
+/* Collapse button (sidebar OPEN) */
+[data-testid="stSidebarCollapseButton"] button {
+  opacity: 1 !important;
+  visibility: visible !important;
+  background: linear-gradient(135deg, var(--surface-solid), rgba(245, 166, 35, 0.1)) !important;
+  border: 1.5px solid rgba(245, 166, 35, 0.4) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+  transition: all var(--transition) !important;
+}
+
+[data-testid="stSidebarCollapseButton"] button:hover {
+  background: linear-gradient(135deg, rgba(245, 166, 35, 0.15), rgba(0, 212, 255, 0.1)) !important;
+  border-color: var(--amber) !important;
+  box-shadow: 0 0 20px var(--amber-glow), 0 4px 15px rgba(0, 0, 0, 0.4) !important;
+  transform: scale(1.08) !important;
+}
+
+[data-testid="stSidebarCollapseButton"] button svg {
+  color: var(--amber) !important;
+}
+
+/* ── EXPAND BUTTON (sidebar CLOSED — the black dot) ──
+   Ultra-aggressive targeting for ALL Streamlit versions */
+
+[data-testid="collapsedControl"],
+[data-testid="stSidebarExpandButton"],
+[data-testid="stAppHeader"],
+[data-testid="stHeader"],
+.stAppHeader {
+  z-index: 999999 !important;
+}
+
+/* Target literally every button that could be this expand control */
+[data-testid="collapsedControl"] button,
+[data-testid="stSidebarExpandButton"] button,
+[data-testid="stAppHeader"] button,
+[data-testid="stHeader"] button,
+.stAppHeader button,
+[data-testid="stBaseButton-header"],
+[data-testid="stBaseButton-headerNoPadding"],
+[data-testid="collapsedControl"] [kind="header"],
+[data-testid="collapsedControl"] [data-testid*="Button"] {
+  opacity: 1 !important;
+  visibility: visible !important;
+  background: linear-gradient(135deg, #f5a623, #ffd06b) !important;
+  border: 2px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 12px !important;
+  min-width: 42px !important;
+  min-height: 42px !important;
+  width: 42px !important;
+  height: 42px !important;
+  box-shadow:
+    0 0 24px rgba(245, 166, 35, 0.45),
+    0 0 48px rgba(245, 166, 35, 0.15),
+    0 4px 16px rgba(0, 0, 0, 0.5) !important;
+  z-index: 999999 !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+}
+
+[data-testid="collapsedControl"] button:hover,
+[data-testid="stSidebarExpandButton"] button:hover,
+[data-testid="stAppHeader"] button:hover,
+[data-testid="stHeader"] button:hover,
+.stAppHeader button:hover,
+[data-testid="stBaseButton-header"]:hover,
+[data-testid="stBaseButton-headerNoPadding"]:hover {
+  background: linear-gradient(135deg, #ffd06b, #00d4ff) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  box-shadow:
+    0 0 35px rgba(245, 166, 35, 0.5),
+    0 0 60px rgba(0, 212, 255, 0.2),
+    0 6px 24px rgba(0, 0, 0, 0.5) !important;
+  transform: scale(1.12) !important;
+}
+
+[data-testid="collapsedControl"] button svg,
+[data-testid="stSidebarExpandButton"] button svg,
+[data-testid="stAppHeader"] button svg,
+[data-testid="stHeader"] button svg,
+.stAppHeader button svg,
+[data-testid="stBaseButton-header"] svg,
+[data-testid="stBaseButton-headerNoPadding"] svg {
+  color: #000 !important;
+  width: 20px !important;
+  height: 20px !important;
+  fill: #000 !important;
+}

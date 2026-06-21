@@ -1,0 +1,86 @@
+CoachLLM Class & TextToSpeech Class
+
+
+######################################################################
+services/coaching/llm.py
+######################################################################
+
+from services.config.workout_config import PROMPT
+
+
+class LLMCoach:
+    def __init__(self, groq_client):
+        self.client = groq_client
+        self.history = []
+        self.system_prompt = PROMPT
+
+    def give_feedback(self, event, issue):
+        prompt = f"Event: {event}"
+
+        if issue:
+            prompt += f" Form Issue: {issue}"
+
+        messages = [
+            {"role": "system", "content": self.system_prompt},
+            *self.history[-10:],
+            {"role": "user", "content": prompt}
+        ]
+
+        response = self.client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=messages,
+            temparature=0.4
+        )
+
+        text = response.choises[0].message.content.strip()
+
+        self.history.append({"role": "assistant", "content": text})
+
+        return text
+    
+
+######################################################################
+services/coaching/tts.py
+######################################################################
+
+from io import BytesIO
+from gtts import gTTS
+
+
+class TextToSpeech:
+    def speak(self, text, lang="en"):
+        cleaned = (text or "").strip()
+
+        if not cleaned:
+            return
+        
+        buffer = BytesIO()
+
+        gTTS(text=cleaned, lang=lang).write_to_fp(buffer)
+
+        buffer.seek(0)
+
+        return buffer.read()
+    
+
+######################################################################
+services/config/workout_config.py
+######################################################################
+
+PROMPT = """
+You are a professional gym trainer. We are using an AI camera to monitor the user's form in real-time.
+I will send you events (like 'workout_started', 'set_completed', 'no_pose_detected') and specific form issues we detect.
+Give VERY SHORT voice feedback (max 15 words).
+Be motivating and corrective based on the events and form issues provided.
+For starting and ending a workout, keep your messages unique, energetic, and cool every time!
+When a set is completed, explicitly tell them to take a quick rest!
+If the event is 'no_pose_detected', tell them simply "No pose detected, please step into the frame!" or a similarly direct message.
+Never explain. Only speak like a coach.
+"""
+
+
+######################################################################
+.env
+######################################################################
+
+GROQ_API_KEY="YOUR_API_KEY"

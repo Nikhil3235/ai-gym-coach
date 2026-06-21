@@ -1,0 +1,149 @@
+SQLite Setup (exercise repository, schema init, and CRUD basics)
+
+
+######################################################################
+services/persistence/exercise_repository.py
+######################################################################
+
+import sqlite3
+import streamlit as st
+from pathlib import Path
+
+_DB_PATH = str(Path(__file__).parent.parent.parent / "data.db")
+
+
+@st.cache_resource
+def _get_connection() -> sqlite3.Connection:
+    conn = sqlite3.connect(_DB_PATH, check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def init_db() -> None:
+    conn = _get_connection()
+
+    with conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS users (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                username   TEXT UNIQUE NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS exercises (
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id       INTEGER NOT NULL REFERENCES users(id),
+                exercise_name TEXT    NOT NULL,
+                reps          INTEGER NOT NULL DEFAULT 0,
+                sets          INTEGER NOT NULL DEFAULT 0,
+                time          INTEGER NOT NULL DEFAULT 0,
+                created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+
+
+def get_user(username: str) -> sqlite3.Row:
+    conn = _get_connection()
+
+    return conn.execute(
+        "SELECT * FROM users WHERE username = ?", (username,)
+    ).fetchone()
+
+
+def create_user(username: str) -> sqlite3.Row:
+    conn = _get_connection()
+    
+    with conn:
+        conn.execute(
+            "INSERT INTO users (username) VALUES (?)", (username,)
+        )
+
+    return get_user(username) 
+
+
+def get_or_create_user(username: str) -> sqlite3.Row:
+    user = get_user(username)
+
+    if user is None:
+        user = create_user(username)
+    
+    return user
+
+
+def add_exercise(user_id, exercise_name, reps, sets, time):
+    conn = _get_connection()
+
+    with conn:
+        existing = conn.execute("""
+            SELECT * FROM exercises 
+            WHERE user_id = ? AND exercise_name = ? AND Date('created_at') = Date('now')
+        """, (user_id, exercise_name)).fetchone()
+
+        if existing:
+            conn.execute("""
+                UPDATE exercises 
+                SET reps = reps + ?, sets = sets + ?, time = time + ?
+                WHERE id = ?
+            """, (reps, sets, time, existing['id']))
+        else:
+            conn.execute("""
+                INSERT INTO exercises (user_id, exercise_name, sets, reps, time)
+                VALUES (?, ?, ?, ?, ?)
+            """, (user_id, exercise_name, sets, reps, time))
+
+
+def get_users_exercises(user_id):
+    conn = _get_connection()
+
+    return conn.execute("""
+        SELECT * FROM exercises 
+        WHERE user_id = ?
+    """, (user_id)).fetchall()
+
+
+######################################################################
+services/auth/login_wall.py
+######################################################################
+
+import streamlit as st
+from services.persistence.exercise_repository import get_or_create_user
+
+
+def render_login_wall():
+    if st.session_state.get("user_id") is not None:
+        return True
+    
+    st.title("🏋️‍♂️ AI Real-time GYM Trainer")
+    st.markdown("### Welcome! Please enter a username to start.")
+
+    with st.form("login_form", clear_on_submit=False):
+        username = st.text_input("Name (unique)", placeholder="unique name e.g. princekhunt")
+        submit_button = st.form_submit_button("Start Session", width="stretch")
+
+    if submit_button:
+        if not username:
+            st.error("Name cannot be empty.")
+            return False
+        
+        user = get_or_create_user(username)
+    
+        st.session_state["user_id"] = user["id"]
+        st.session_state["username"] = user["username"]
+
+        st.rerun()
+
+    return False
+
+
+######################################################################
+main.py
+######################################################################
+
+from services.persistence.exercise_repository import init_db
+
+init_db()

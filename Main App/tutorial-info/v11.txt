@@ -1,0 +1,380 @@
+Push-up, Biceps Curls, Shoulder Press and Lunges Class
+
+
+######################################################################
+detectors/biceps_curl.py
+######################################################################
+
+import math
+from core.base_exercise import BaseExercise
+
+
+class BicepsCurlDetector(BaseExercise):
+    UP_THRESHOLD = 50
+    DOWN_THRESHOLD = 160
+    MIN_VISIBILITY = 0.7
+    ELBOW_DRIFT_TOLERANCE = 0.06
+    SWING_THRESHOLD = 15
+
+    LEFT_SHOULDER = 11
+    LEFT_ELBOW = 13
+    LEFT_WRIST = 15
+    RIGHT_SHOULDER = 12
+    RIGHT_ELBOW = 14
+    RIGHT_WRIST = 16
+    LEFT_HIP = 23
+    RIGHT_HIP = 24
+
+    def __init__(self):
+        super().__init__()
+        self._shoulder_x_baseline = None
+
+    def reset(self) -> None:
+        self.reps = 0
+        self.stage = None
+        self._shoulder_x_baseline = None
+
+    def process(self, landmarks) -> dict:
+        left_vis = landmarks[self.LEFT_ELBOW].visibility
+        right_vis = landmarks[self.RIGHT_ELBOW].visibility
+
+        if left_vis >= right_vis:
+            shoulder_idx = self.LEFT_SHOULDER
+            elbow_idx = self.LEFT_ELBOW
+            wrist_idx = self.LEFT_WRIST
+        else:
+            shoulder_idx = self.RIGHT_SHOULDER
+            elbow_idx = self.RIGHT_ELBOW
+            wrist_idx = self.RIGHT_WRIST
+
+        elbow_angle = self.calculate_angle(
+            self.get_point(landmarks, shoulder_idx),
+            self.get_point(landmarks, elbow_idx),
+            self.get_point(landmarks, wrist_idx),
+        )
+
+        key_landmarks_visible = landmarks[shoulder_idx].visibility > self.MIN_VISIBILITY and landmarks[elbow_idx].visibility > self.MIN_VISIBILITY and landmarks[wrist_idx].visibility > self.MIN_VISIBILITY
+
+        if key_landmarks_visible:
+            if elbow_angle < self.UP_THRESHOLD:
+                self.stage = "up"
+
+            if elbow_angle > self.DOWN_THRESHOLD and self.stage == "up":
+                self.stage = "down"
+                self.reps += 1
+
+        shoulder_x = landmarks[shoulder_idx].x
+        elbow_x = landmarks[elbow_idx].x
+        elbow_drift = abs(elbow_x - shoulder_x)
+
+        if elbow_drift <= self.ELBOW_DRIFT_TOLERANCE:
+            shoulder_status = "STABLE"
+        else:
+            shoulder_status = "ELBOW DRIFTING"
+
+        shoulder_mid_x = (landmarks[self.LEFT_SHOULDER].x + landmarks[self.RIGHT_SHOULDER].x) / 2
+        shoulder_mid_y = (landmarks[self.LEFT_SHOULDER].y + landmarks[self.RIGHT_SHOULDER].y) / 2
+
+        hip_mid_x = (landmarks[self.LEFT_HIP].x + landmarks[self.RIGHT_HIP].x) / 2
+        hip_mid_y = (landmarks[self.LEFT_HIP].y + landmarks[self.RIGHT_HIP].y) / 2
+
+        dx = shoulder_mid_x - hip_mid_x
+        dy = shoulder_mid_y - hip_mid_y
+
+        torso_angle_from_vertical = self._safe_angle(dx, dy)
+
+        if torso_angle_from_vertical <= self.SWING_THRESHOLD:
+            swing_status = "NO SWING"
+        else:
+            swing_status = "SWINGING"
+
+        return {
+            "reps": self.reps,
+            "elbow_angle": int(elbow_angle),
+            "shoulder_status": shoulder_status,
+            "swing_status": swing_status,
+        }
+
+    def _safe_angle(self, dx, dy):
+        return math.degrees(math.atan2(abs(dx), abs(dy))) if dy != 0 else 0.0
+    
+
+######################################################################
+detectors/lunges.py
+######################################################################
+
+from core.base_exercise import BaseExercise
+
+
+class LungesDetector(BaseExercise):
+    DOWN_THRESHOLD = 100
+    UP_THRESHOLD = 160
+    MIN_VISIBILITY = 0.7
+    BALANCE_TOLERANCE = 0.10
+
+    LEFT_HIP = 23
+    LEFT_KNEE = 25
+    LEFT_ANKLE = 27
+    RIGHT_HIP = 24
+    RIGHT_KNEE = 26
+    RIGHT_ANKLE = 28
+    LEFT_SHOULDER = 11
+    RIGHT_SHOULDER = 12
+
+    def __init__(self):
+        super().__init__()
+
+    def reset(self) -> None:
+        self.reps = 0
+        self.stage = None
+
+    def process(self, landmarks) -> dict:
+        left_knee_angle = self.calculate_angle(
+            self.get_point(landmarks, self.LEFT_HIP),
+            self.get_point(landmarks, self.LEFT_KNEE),
+            self.get_point(landmarks, self.LEFT_ANKLE),
+        )
+
+        right_knee_angle = self.calculate_angle(
+            self.get_point(landmarks, self.RIGHT_HIP),
+            self.get_point(landmarks, self.RIGHT_KNEE),
+            self.get_point(landmarks, self.RIGHT_ANKLE),
+        )
+
+        if left_knee_angle <= right_knee_angle:
+            front_knee_angle = left_knee_angle
+            front_hip_idx = self.LEFT_HIP
+            front_knee_idx = self.LEFT_KNEE
+            front_ankle_idx = self.LEFT_ANKLE
+            shoulder_idx_for_torso = self.LEFT_SHOULDER
+        else:
+            front_knee_angle = right_knee_angle
+            front_hip_idx = self.RIGHT_HIP
+            front_knee_idx = self.RIGHT_KNEE
+            front_ankle_idx = self.RIGHT_ANKLE
+            shoulder_idx_for_torso = self.RIGHT_SHOULDER
+
+        key_landmarks_visible = landmarks[front_hip_idx].visibility > self.MIN_VISIBILITY and landmarks[front_knee_idx].visibility > self.MIN_VISIBILITY and landmarks[front_ankle_idx].visibility > self.MIN_VISIBILITY
+
+        if key_landmarks_visible:
+            if front_knee_angle < self.DOWN_THRESHOLD:
+                self.stage = "down"
+
+            if front_knee_angle > self.UP_THRESHOLD and self.stage == "down":
+                self.stage = "up"
+                self.reps += 1
+
+        torso_angle = self.calculate_angle(
+            self.get_point(landmarks, shoulder_idx_for_torso),
+            self.get_point(landmarks, front_hip_idx),
+            self.get_point(landmarks, front_knee_idx),
+        )
+
+        shoulder_mid_x = (landmarks[self.LEFT_SHOULDER].x + landmarks[self.RIGHT_SHOULDER].x) / 2
+        hip_mid_x = (landmarks[self.LEFT_HIP].x + landmarks[self.RIGHT_HIP].x) / 2
+        lateral_offset = abs(shoulder_mid_x - hip_mid_x)
+
+        if lateral_offset <= self.BALANCE_TOLERANCE:
+            balance_status = "BALANCED"
+        else:
+            balance_status = "OFF BALANCE"
+
+        return {
+            "reps": self.reps,
+            "front_knee_angle": int(front_knee_angle),
+            "torso_angle": int(torso_angle),
+            "balance_status": balance_status,
+        }
+    
+
+######################################################################
+detectors/pushup.py
+######################################################################
+
+from core.base_exercise import BaseExercise
+
+
+class PushUpDetector(BaseExercise):
+    DOWN_THRESHOLD = 90
+    UP_THRESHOLD = 160
+    MIN_VISIBILITY = 0.7
+    HIP_SAG_TOLERANCE = 0.08
+
+    LEFT_SHOULDER = 11
+    LEFT_ELBOW = 13
+    LEFT_WRIST = 15
+    RIGHT_SHOULDER = 12
+    RIGHT_ELBOW = 14
+    RIGHT_WRIST = 16
+    LEFT_HIP = 23
+    RIGHT_HIP = 24
+    LEFT_ANKLE = 27
+    RIGHT_ANKLE = 28
+
+    def __init__(self):
+        super().__init__()
+
+    def reset(self) -> None:
+        self.reps = 0
+        self.stage = None
+
+    def process(self, landmarks) -> dict:
+        left_vis = landmarks[self.LEFT_ELBOW].visibility
+        right_vis = landmarks[self.RIGHT_ELBOW].visibility
+
+        if left_vis >= right_vis:
+            shoulder_idx = self.LEFT_SHOULDER
+            elbow_idx = self.LEFT_ELBOW
+            wrist_idx = self.LEFT_WRIST
+            hip_idx = self.LEFT_HIP
+            ankle_idx = self.LEFT_ANKLE
+        else:
+            shoulder_idx = self.RIGHT_SHOULDER
+            elbow_idx = self.RIGHT_ELBOW
+            wrist_idx = self.RIGHT_WRIST
+            hip_idx = self.RIGHT_HIP
+            ankle_idx = self.RIGHT_ANKLE
+
+        elbow_angle = self.calculate_angle(
+            self.get_point(landmarks, shoulder_idx),
+            self.get_point(landmarks, elbow_idx),
+            self.get_point(landmarks, wrist_idx),
+        )
+
+        body_angle = self.calculate_angle(
+            self.get_point(landmarks, shoulder_idx),
+            self.get_point(landmarks, hip_idx),
+            self.get_point(landmarks, ankle_idx),
+        )
+
+        shoulder_y = landmarks[shoulder_idx].y
+        ankle_y = landmarks[ankle_idx].y
+        hip_y = landmarks[hip_idx].y
+
+        expected_hip_y = (shoulder_y + ankle_y) / 2
+        hip_deviation = hip_y - expected_hip_y
+
+        key_landmarks_visible = landmarks[shoulder_idx].visibility > self.MIN_VISIBILITY and landmarks[elbow_idx].visibility > self.MIN_VISIBILITY and landmarks[wrist_idx].visibility > self.MIN_VISIBILITY and landmarks[hip_idx].visibility > self.MIN_VISIBILITY
+        
+        if key_landmarks_visible:
+            if elbow_angle < self.DOWN_THRESHOLD:
+                self.stage = "down"
+
+            if elbow_angle > self.UP_THRESHOLD and self.stage == "down":
+                self.stage = "up"
+                self.reps += 1
+
+        if body_angle > 160:
+            body_alignment = "Straight"
+        elif body_angle > 140:
+            body_alignment = "Slight Bend"
+        else:
+            body_alignment = "Poor Form"
+
+        if abs(hip_deviation) <= self.HIP_SAG_TOLERANCE:
+            hip_status = "LEVEL"
+        elif hip_deviation > self.HIP_SAG_TOLERANCE:
+            hip_status = "SAGGING"
+        else:
+            hip_status = "PIKED UP"
+
+        return {
+            "reps": self.reps,
+            "elbow_angle": int(elbow_angle),
+            "body_alignment": body_alignment,
+            "hip_status": hip_status,
+        }
+    
+
+######################################################################
+detectors/shoulder_press.py
+######################################################################
+
+from core.base_exercise import BaseExercise
+
+
+class ShoulderPressDetector(BaseExercise):
+    UP_THRESHOLD = 160
+    DOWN_THRESHOLD = 90
+    MIN_VISIBILITY = 0.7
+
+    LEFT_SHOULDER = 11
+    LEFT_ELBOW = 13
+    LEFT_WRIST = 15
+    RIGHT_SHOULDER = 12
+    RIGHT_ELBOW = 14
+    RIGHT_WRIST = 16
+    LEFT_HIP = 23
+    RIGHT_HIP = 24
+    LEFT_KNEE = 25
+    RIGHT_KNEE = 26
+
+    def __init__(self):
+        super().__init__()
+
+    def reset(self) -> None:
+        self.reps = 0
+        self.stage = None
+
+    def process(self, landmarks) -> dict:
+        left_vis = landmarks[self.LEFT_ELBOW].visibility
+        right_vis = landmarks[self.RIGHT_ELBOW].visibility
+
+        if left_vis >= right_vis:
+            shoulder_idx = self.LEFT_SHOULDER
+            elbow_idx = self.LEFT_ELBOW
+            wrist_idx = self.LEFT_WRIST
+            hip_idx = self.LEFT_HIP
+            knee_idx = self.LEFT_KNEE
+        else:
+            shoulder_idx = self.RIGHT_SHOULDER
+            elbow_idx = self.RIGHT_ELBOW
+            wrist_idx = self.RIGHT_WRIST
+            hip_idx = self.RIGHT_HIP
+            knee_idx = self.RIGHT_KNEE
+
+        elbow_angle = self.calculate_angle(
+            self.get_point(landmarks, shoulder_idx),
+            self.get_point(landmarks, elbow_idx),
+            self.get_point(landmarks, wrist_idx),
+        )
+
+        key_landmarks_visible = landmarks[shoulder_idx].visibility > self.MIN_VISIBILITY and landmarks[elbow_idx].visibility > self.MIN_VISIBILITY and landmarks[wrist_idx].visibility > self.MIN_VISIBILITY
+
+        if key_landmarks_visible:
+            if elbow_angle > self.UP_THRESHOLD:
+                self.stage = "up"
+
+            if elbow_angle < self.DOWN_THRESHOLD and self.stage == "up":
+                self.stage = "down"
+                self.reps += 1
+
+        if elbow_angle >= self.UP_THRESHOLD:
+            extension_status = "FULL EXTENSION"
+        elif elbow_angle >= 130:
+            extension_status = "NEARLY EXTENDED"
+        elif elbow_angle >= self.DOWN_THRESHOLD:
+            extension_status = "PRESSING"
+        else:
+            extension_status = "START POSITION"
+
+        back_angle = self.calculate_angle(
+            self.get_point(landmarks, shoulder_idx),
+            self.get_point(landmarks, hip_idx),
+            self.get_point(landmarks, knee_idx),
+        )
+
+        if back_angle >= 160:
+            back_arch_status = "Neutral"
+        elif back_angle >= 140:
+            back_arch_status = "Slight Arch"
+        else:
+            back_arch_status = "Excessive Arch"
+
+        return {
+            "reps": self.reps,
+            "elbow_angle": int(elbow_angle),
+            "extension_status": extension_status,
+            "back_arch_status": back_arch_status,
+        }
+    

@@ -1,0 +1,3 @@
+MediaPipe Concepts (landmarks, confidence scores, and tracking model)
+
+https://ai.google.dev/edge/mediapipe/solutions/guide

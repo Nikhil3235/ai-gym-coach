@@ -1,0 +1,57 @@
+Login Form UI
+
+
+######################################################################
+services/auth/login_wall.py
+######################################################################
+
+import streamlit as st
+
+
+def render_login_wall():
+    if st.session_state.get("user_id") is not None:
+        return True
+    
+    st.title("🏋️‍♂️ AI Real-time GYM Trainer")
+    st.markdown("### Welcome! Please enter a username to start.")
+
+    with st.form("login_form", clear_on_submit=False):
+        username = st.text_input("Name (unique)", placeholder="unique name e.g. princekhunt")
+        submit_button = st.form_submit_button("Start Session", width="stretch")
+
+    if submit_button:
+        if not username:
+            st.error("Name cannot be empty.")
+            return False
+    
+        st.session_state["username"] = username
+        st.session_state["user_id"] = "1"
+
+        st.rerun()
+
+    return False
+
+
+######################################################################
+main.py
+######################################################################
+
+import streamlit as st
+from services.auth.login_wall import render_login_wall
+
+
+def main():
+    st.set_page_config(
+        page_icon="🏋️‍♀️",
+        page_title="AI Real-time GYM Coach",
+        initial_sidebar_state="expanded",
+        layout="centered"
+    )
+
+    if not render_login_wall():
+        return 
+    
+    st.write("Hello")
+
+if __name__ == "__main__":
+    main()

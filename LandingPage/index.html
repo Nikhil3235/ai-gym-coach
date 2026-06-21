@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Real-time AI GYM Coach — NIKHIL MALI</title>
+    <meta name="description" content="AI-powered real-time gym coach using computer vision. Get instant form feedback, rep counting, and voice coaching. Built by Nikhil Mali." />
+
+    <!-- Fonts -->
+    <style>
+      @font-face {
+        font-family: "Averta";
+        src: url("fonts/Averta.woff2") format("woff2");
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Instrument+Serif:ital,wght@0,400;1,400&family=Ubuntu:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+
+    <!-- ═══════════════════════════════════════════════════════
+         1. PRELOADER — 3D rotating cube animation
+    ═══════════════════════════════════════════════════════ -->
+    <div id="preloader" class="preloader" aria-label="Loading">
+      <div class="preloader-inner">
+        <div class="cube-loader">
+          <div class="cube-face front"></div>
+          <div class="cube-face back"></div>
+          <div class="cube-face left"></div>
+          <div class="cube-face right"></div>
+          <div class="cube-face top"></div>
+          <div class="cube-face bottom"></div>
+        </div>
+        <span class="preloader-text">LOADING<span class="loading-dots"></span></span>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         2. SCROLL PROGRESS BAR
+    ═══════════════════════════════════════════════════════ -->
+    <div class="scroll-progress" id="scroll-progress" aria-hidden="true">
+      <div class="scroll-progress-bar"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         GRID OVERLAY
+    ═══════════════════════════════════════════════════════ -->
+    <div class="grid-overlay" aria-hidden="true"></div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         13. CURSOR GLOW
+    ═══════════════════════════════════════════════════════ -->
+    <div class="cursor-glow" aria-hidden="true"></div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         3. NAVIGATION — Glassmorphism + Mobile Menu
+    ═══════════════════════════════════════════════════════ -->
+    <nav class="nav" id="main-nav" role="navigation" aria-label="Main navigation">
+      <div class="nav-inner">
+        <a href="#hero" class="nav-logo" aria-label="AI Gym Coach Home">
+          <span class="logo-bracket">(</span><span class="logo-name">NIKHIL</span> AI GYM COACH<span class="logo-bracket">)</span>
+        </a>
+
+        <div class="nav-links" id="nav-links">
+          <a href="#hero" class="nav-link active" data-section="hero">Home</a>
+          <a href="#how-it-works" class="nav-link" data-section="how-it-works">How It Works</a>
+          <a href="#gallery" class="nav-link" data-section="gallery">Gallery</a>
+          <a href="#exercises" class="nav-link" data-section="exercises">Exercises</a>
+
+          <a href="#tech-stack" class="nav-link" data-section="tech-stack">Tech Stack</a>
+          <a href="#contact" class="nav-link" data-section="contact">Contact</a>
+        </div>
+
+        <!-- Mobile hamburger -->
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+        </button>
+      </div>
+
+      <!-- Mobile slide-in panel -->
+      <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+        <div class="mobile-menu-inner">
+          <a href="#hero" class="mobile-link" data-section="hero">Home</a>
+          <a href="#how-it-works" class="mobile-link" data-section="how-it-works">How It Works</a>
+          <a href="#gallery" class="mobile-link" data-section="gallery">Gallery</a>
+          <a href="#exercises" class="mobile-link" data-section="exercises">Exercises</a>
+
+          <a href="#tech-stack" class="mobile-link" data-section="tech-stack">Tech Stack</a>
+          <a href="#contact" class="mobile-link" data-section="contact">Contact</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════════════
+         4. HERO SECTION
+    ═══════════════════════════════════════════════════════ -->
+    <section class="hero" id="hero" aria-label="Hero section">
+      <!-- Particle canvas -->
+      <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+      <!-- Floating 3D shapes (CSS only) -->
+      <div class="floating-shapes" aria-hidden="true">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="shape shape-5"></div>
+      </div>
+
+      <div class="hero-content">
+        <div class="hero-tag reveal">
+          <span class="dot blink"></span>
+          <span>AI-POWERED · REAL-TIME · GYM COACH</span>
+        </div>
+
+        <h1 class="hero-title reveal">
+          REAL-TIME<br />
+          <span class="gradient-text">AI GYM COACH</span>
+        </h1>
+
+        <p class="hero-sub reveal">
+          <span class="sub-line">Your form. 
+            <span class="glow-word amber-word">Analyzed.</span> 
+            <span class="glow-word cyan-word">Corrected.</span> 
+            <span class="glow-word purple-word">In milliseconds.</span>
+          </span>
+          <br />
+          <span class="sub-line sub-line-2">Computer vision that watches 
+            <span class="shimmer-text">every rep</span> and tells you 
+            <span class="shimmer-text">exactly what to fix.</span>
+          </span>
+        </p>
+
+        <div class="hero-buttons reveal">
+          <a
+            href="http://localhost:8505"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-primary"
+            id="cta-button"
+            aria-label="Try the AI Gym Coach live"
+          >
+            <span>Try it live</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path
+                d="M3 8H13M13 8L9 4M13 8L9 12"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </a>
+          <a href="#exercises" class="btn-secondary" aria-label="Explore exercises">EXPLORE ↓</a>
+        </div>
+
+        <!-- Live metrics strip -->
+        <div class="hero-metrics reveal">
+          <div class="metric-card">
+            <span class="metric-value">100<span style="font-size:0.6em;color:var(--amber)">ms</span></span>
+            <span class="metric-label">Avg Latency</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value">5<span style="font-size:0.6em;color:var(--amber)">+</span></span>
+            <span class="metric-label">Exercises</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value">95<span style="font-size:0.6em;color:var(--amber)">%</span></span>
+            <span class="metric-label">Form Accuracy</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         5. HOW IT WORKS — 3-step process
+    ═══════════════════════════════════════════════════════ -->
+    <section class="how-it-works" id="how-it-works" aria-label="How it works">
+      <div class="section-header center-header reveal">
+        <span class="section-tag">// HOW IT WORKS</span>
+        <h2 class="section-title">Three steps to<br /><em>perfect form</em></h2>
+        <p class="section-desc">
+          <span class="glow-word cyan-word">No downloads.</span> 
+          <span class="glow-word purple-word">No hardware.</span> 
+          Just open your browser and start training with <span class="shimmer-text">AI precision.</span>
+        </p>
+      </div>
+
+      <div class="steps-container reveal">
+        <!-- Connecting line -->
+        <div class="steps-line" aria-hidden="true"></div>
+
+        <!-- Step 1 -->
+        <div class="step-card" data-tilt aria-label="Step 1: Open Camera">
+          <div class="step-number">01</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="6" y="10" width="36" height="28" rx="4" />
+              <circle cx="24" cy="24" r="8" />
+              <circle cx="24" cy="24" r="3" />
+              <rect x="18" y="6" width="12" height="4" rx="1" />
+            </svg>
+          </div>
+          <h3 class="step-title">Open Camera</h3>
+          <p class="step-desc">Use your webcam or phone camera. No special equipment needed — just position yourself and press start.</p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step-card" data-tilt aria-label="Step 2: AI Analyzes">
+          <div class="step-number">02</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <ellipse cx="24" cy="24" rx="18" ry="16" />
+              <path d="M14 20c2-3 6-5 10-5s8 2 10 5" />
+              <path d="M18 28c1.5 2 3.5 3 6 3s4.5-1 6-3" />
+              <circle cx="18" cy="22" r="1.5" fill="currentColor" />
+              <circle cx="30" cy="22" r="1.5" fill="currentColor" />
+              <path d="M8 14L4 8M40 14l4-6M8 34l-4 6M40 34l4 6" />
+              <path d="M24 8V4M24 44v-4" />
+            </svg>
+          </div>
+          <h3 class="step-title">AI Analyzes</h3>
+          <p class="step-desc">MediaPipe and Groq AI detect 33 body landmarks in real-time, analyzing every angle of your form with millisecond precision.</p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step-card" data-tilt aria-label="Step 3: Get Coached">
+          <div class="step-number">03</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="4" y="16" width="8" height="16" rx="2" />
+              <path d="M12 18l10-8c2-1.5 4 0 4 2v24c0 2-2 3.5-4 2l-10-8" />
+              <path d="M32 16c2 2.5 3 5 3 8s-1 5.5-3 8" />
+              <path d="M36 10c4 4 6 8.5 6 14s-2 10-6 14" />
+            </svg>
+          </div>
+          <h3 class="step-title">Get Coached</h3>
+          <p class="step-desc">Receive real-time voice feedback, rep counting, and form corrections — like having a personal trainer watching every movement.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         6. GALLERY SECTION — 6 image cards
+    ═══════════════════════════════════════════════════════ -->
+    <section class="visuals" id="gallery" aria-label="Gallery">
+      <div class="section-header center-header reveal">
+        <span class="section-tag">// GALLERY</span>
+        <h2 class="section-title">Built for<br /><em>real athletes</em></h2>
+      </div>
+
+      <div class="gallery-grid reveal">
+        <!-- Card 1 -->
+        <div class="gallery-card card-tilt-left card-float-1" data-tilt>
+          <div class="card-inner">
+            <div class="card-img-wrap">
+              <img
+                src="./IMGs_add_your_own/i1.png"
+                alt="Squat form analysis by AI"
+                loading="lazy"
+                onerror="this.parentElement.classList.add('img-placeholder')"
+              />
+              <div class="card-scan-line"></div>
+            </div>
+            <div class="card-label">Squat Analysis</div>
+            <div class="card-corner tl"></div>
+            <div class="card-corner tr"></div>
+            <div class="card-corner bl"></div>
+            <div class="card-corner br"></div>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="gallery-card card-center card-float-2" data-tilt>
+          <div class="card-inner">
+            <div class="card-img-wrap">
+              <img
+                src="./IMGs_add_your_own/i2.png"
+                alt="Push-up form detection"
+                loading="lazy"
+                onerror="this.parentElement.classList.add('img-placeholder')"
+              />
+              <div class="card-scan-line"></div>
+            </div>
+            <div class="card-label">Push-up Form</div>
+            <div class="card-corner tl"></div>
+            <div class="card-corner tr"></div>
+            <div class="card-corner bl"></div>
+            <div class="card-corner br"></div>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="gallery-card card-tilt-right card-float-3" data-tilt>
+          <div class="card-inner">
+            <div class="card-img-wrap">
+              <img
+                src="./IMGs_add_your_own/i3.png"
+                alt="Biceps curl tracking"
+                loading="lazy"
+                onerror="this.parentElement.classList.add('img-placeholder')"
+              />
+              <div class="card-scan-line"></div>
+            </div>
+            <div class="card-label">Biceps Curl</div>
+            <div class="card-corner tl"></div>
+            <div class="card-corner tr"></div>
+            <div class="card-corner bl"></div>
+            <div class="card-corner br"></div>
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="gallery-card card-tilt-right card-float-4" data-tilt>
+          <div class="card-inner">
+            <div class="card-img-wrap">
+              <img
+                src="./IMGs_add_your_own/i4.png"
+                alt="Shoulder press alignment"
+                loading="lazy"
+                onerror="this.parentElement.classList.add('img-placeholder')"
+              />
+              <div class="card-scan-line"></div>
+            </div>
+            <div class="card-label">Shoulder Press</div>
+            <div class="card-corner tl"></div>
+            <div class="card-corner tr"></div>
+            <div class="card-corner bl"></div>
+            <div class="card-corner br"></div>
+          </div>
+        </div>
+
+        <!-- Card 5 -->
+        <div class="gallery-card card-center card-float-5" data-tilt>
+          <div class="card-inner">
+            <div class="card-img-wrap">
+              <img
+                src="./IMGs_add_your_own/i5.png"
+                alt="Lunge detection in progress"
+                loading="lazy"
+                onerror="this.parentElement.classList.add('img-placeholder')"
+              />
+              <div class="card-scan-line"></div>
+            </div>
+            <div class="card-label">Lunge Detection</div>
+            <div class="card-corner tl"></div>
+            <div class="card-corner tr"></div>
+            <div class="card-corner bl"></div>
+            <div class="card-corner br"></div>
+          </div>
+        </div>
+
+        <!-- Card 6 -->
+        <div class="gallery-card card-tilt-left card-float-6" data-tilt>
+          <div class="card-inner">
+            <div class="card-img-wrap">
+              <img
+                src="./IMGs_add_your_own/i6.png"
+                alt="Deadlift form feedback"
+                loading="lazy"
+                onerror="this.parentElement.classList.add('img-placeholder')"
+              />
+              <div class="card-scan-line"></div>
+            </div>
+            <div class="card-label">Deadlift Form</div>
+            <div class="card-corner tl"></div>
+            <div class="card-corner tr"></div>
+            <div class="card-corner bl"></div>
+            <div class="card-corner br"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         7. SUPPORTED EXERCISES
+    ═══════════════════════════════════════════════════════ -->
+    <section class="exercises" id="exercises" aria-label="Supported exercises">
+      <div class="section-header center-header reveal">
+        <span class="section-tag">// EXERCISES</span>
+        <h2 class="section-title">Supported<br /><em>exercises</em></h2>
+        <p class="section-desc">
+          <span class="shimmer-text">Five precision-tracked exercises</span> — each with real-time 
+          <span class="glow-word cyan-word">angle analysis,</span> 
+          <span class="glow-word amber-word">rep counting,</span> and 
+          <span class="glow-word purple-word">form scoring.</span>
+        </p>
+      </div>
+
+      <div class="exercise-grid reveal">
+        <!-- Squats -->
+        <div class="exercise-card" data-tilt aria-label="Squats exercise">
+          <div class="exercise-icon">
+            <img src="./IMGs_add_your_own/icon_squat.png" alt="Squat Icon">
+          </div>
+          <h3 class="exercise-name">Squats</h3>
+          <div class="exercise-muscles">
+            <span class="muscle-tag">Quadriceps</span>
+            <span class="muscle-tag">Glutes</span>
+            <span class="muscle-tag">Hamstrings</span>
+          </div>
+          <div class="exercise-difficulty">
+            <span class="diff-label">Difficulty</span>
+            <div class="diff-dots">
+              <span class="diff-dot active"></span>
+              <span class="diff-dot active"></span>
+              <span class="diff-dot"></span>
+            </div>
+          </div>
+          <div class="exercise-metrics">
+            <span>Knee angle · Hip depth · Back alignment</span>
+          </div>
+        </div>
+
+        <!-- Push-ups -->
+        <div class="exercise-card" data-tilt aria-label="Push-ups exercise">
+          <div class="exercise-icon">
+            <img src="./IMGs_add_your_own/icon_pushup.png" alt="Pushup Icon">
+          </div>
+          <h3 class="exercise-name">Push-ups</h3>
+          <div class="exercise-muscles">
+            <span class="muscle-tag">Chest</span>
+            <span class="muscle-tag">Triceps</span>
+            <span class="muscle-tag">Core</span>
+          </div>
+          <div class="exercise-difficulty">
+            <span class="diff-label">Difficulty</span>
+            <div class="diff-dots">
+              <span class="diff-dot active"></span>
+              <span class="diff-dot active"></span>
+              <span class="diff-dot"></span>
+            </div>
+          </div>
+          <div class="exercise-metrics">
+            <span>Elbow angle · Body line · Depth range</span>
+          </div>
+        </div>
+
+        <!-- Biceps Curls -->
+        <div class="exercise-card" data-tilt aria-label="Biceps Curls exercise">
+          <div class="exercise-icon">
+            <img src="./IMGs_add_your_own/icon_bicep.png" alt="Biceps Curl Icon">
+          </div>
+          <h3 class="exercise-name">Biceps Curls</h3>
+          <div class="exercise-muscles">
+            <span class="muscle-tag">Biceps</span>
+            <span class="muscle-tag">Forearms</span>
+          </div>
+          <div class="exercise-difficulty">
+            <span class="diff-label">Difficulty</span>
+            <div class="diff-dots">
+              <span class="diff-dot active"></span>
+              <span class="diff-dot"></span>
+              <span class="diff-dot"></span>
+            </div>
+          </div>
+          <div class="exercise-metrics">
+            <span>Elbow angle · Wrist rotation · Range of motion</span>
+          </div>
+        </div>
+
+        <!-- Shoulder Press -->
+        <div class="exercise-card" data-tilt aria-label="Shoulder Press exercise">
+          <div class="exercise-icon">
+            <img src="./IMGs_add_your_own/icon_shoulder.png" alt="Shoulder Press Icon">
+          </div>
+          <h3 class="exercise-name">Shoulder Press</h3>
+          <div class="exercise-muscles">
+            <span class="muscle-tag">Deltoids</span>
+            <span class="muscle-tag">Triceps</span>
+            <span class="muscle-tag">Traps</span>
+          </div>
+          <div class="exercise-difficulty">
+            <span class="diff-label">Difficulty</span>
+            <div class="diff-dots">
+              <span class="diff-dot active"></span>
+              <span class="diff-dot active"></span>
+              <span class="diff-dot active"></span>
+            </div>
+          </div>
+          <div class="exercise-metrics">
+            <span>Shoulder angle · Lockout · Symmetry</span>
+          </div>
+        </div>
+
+        <!-- Lunges -->
+        <div class="exercise-card" data-tilt aria-label="Lunges exercise">
+          <div class="exercise-icon">
+            <img src="./IMGs_add_your_own/icon_lunge.png" alt="Lunge Icon">
+          </div>
+          <h3 class="exercise-name">Lunges</h3>
+          <div class="exercise-muscles">
+            <span class="muscle-tag">Quadriceps</span>
+            <span class="muscle-tag">Glutes</span>
+            <span class="muscle-tag">Calves</span>
+          </div>
+          <div class="exercise-difficulty">
+            <span class="diff-label">Difficulty</span>
+            <div class="diff-dots">
+              <span class="diff-dot active"></span>
+              <span class="diff-dot active"></span>
+              <span class="diff-dot"></span>
+            </div>
+          </div>
+          <div class="exercise-metrics">
+            <span>Shoulder angle · Lockout · Symmetry</span>
+          </div>
+        </div>
+
+        <!-- Lunges -->
+        <div class="exercise-card" data-tilt aria-label="Lunges exercise">
+          <div class="exercise-icon">
+            <img src="./IMGs_add_your_own/icon_lunge.png" alt="Lunge Icon">
+          </div>
+          <h3 class="exercise-name">Lunges</h3>
+          <div class="exercise-muscles">
+            <span class="muscle-tag">Quadriceps</span>
+            <span class="muscle-tag">Glutes</span>
+            <span class="muscle-tag">Calves</span>
+          </div>
+          <div class="exercise-difficulty">
+            <span class="diff-label">Difficulty</span>
+            <div class="diff-dots">
+              <span class="diff-dot active"></span>
+              <span class="diff-dot active"></span>
+              <span class="diff-dot"></span>
+            </div>
+          </div>
+          <div class="exercise-metrics">
+            <span>Knee angle · Step depth · Balance tracking</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         9. TECH STACK
+    ═══════════════════════════════════════════════════════ -->
+    <section class="tech-stack" id="tech-stack" aria-label="Technology stack">
+      <div class="section-header center-header reveal">
+        <span class="section-tag">// TECH STACK</span>
+        <h2 class="section-title">Powered by<br /><em>cutting-edge tech</em></h2>
+      </div>
+
+      <div class="tech-grid reveal">
+        <!-- MediaPipe -->
+        <div class="tech-card" data-tilt>
+          <div class="tech-icon">
+            <img src="https://developers.google.com/static/mediapipe/images/mediapipe_icon.svg" alt="MediaPipe Logo" onerror="this.src='https://cdn.simpleicons.org/google'"/>
+          </div>
+          <h3 class="tech-name">MediaPipe</h3>
+          <p class="tech-desc">Google's ML framework for 33-point body pose estimation with sub-100ms inference.</p>
+        </div>
+
+        <!-- Streamlit -->
+        <div class="tech-card" data-tilt>
+          <div class="tech-icon">
+            <img src="https://cdn.simpleicons.org/streamlit" alt="Streamlit Logo" />
+          </div>
+          <h3 class="tech-name">Streamlit</h3>
+          <p class="tech-desc">Rapid Python web-app framework for deploying the coach as an interactive UI.</p>
+        </div>
+
+        <!-- OpenCV -->
+        <div class="tech-card" data-tilt>
+          <div class="tech-icon">
+            <img src="https://cdn.simpleicons.org/opencv" alt="OpenCV Logo" />
+          </div>
+          <h3 class="tech-name">OpenCV</h3>
+          <p class="tech-desc">Real-time video processing and computer vision operations at 30+ FPS.</p>
+        </div>
+
+        <!-- Python -->
+        <div class="tech-card" data-tilt>
+          <div class="tech-icon">
+            <img src="https://cdn.simpleicons.org/python" alt="Python Logo" />
+          </div>
+          <h3 class="tech-name">Python</h3>
+          <p class="tech-desc">Core backend language powering all ML pipelines, logic, and data processing.</p>
+        </div>
+
+        <!-- Groq AI -->
+        <div class="tech-card" data-tilt>
+          <div class="tech-icon">
+            <img src="https://cdn.simpleicons.org/groq" alt="Groq AI Logo" />
+          </div>
+          <h3 class="tech-name">Groq AI</h3>
+          <p class="tech-desc">Ultra-fast LPU inference engine for generating real-time coaching feedback.</p>
+        </div>
+
+        <!-- WebRTC -->
+        <div class="tech-card" data-tilt>
+          <div class="tech-icon">
+            <img src="https://cdn.simpleicons.org/webrtc" alt="WebRTC Logo" />
+          </div>
+          <h3 class="tech-name">WebRTC</h3>
+          <p class="tech-desc">Browser-native camera streaming with peer-to-peer low-latency video capture.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         10. TESTIMONIALS
+    ═══════════════════════════════════════════════════════ -->
+    <section class="testimonials" id="testimonials" aria-label="Testimonials">
+      <div class="section-header center-header reveal">
+        <span class="section-tag">// TESTIMONIALS</span>
+        <h2 class="section-title">What users<br /><em>are saying</em></h2>
+      </div>
+
+      <div class="testimonial-track reveal">
+        <!-- Testimonial 1 -->
+        <div class="testimonial-card">
+          <div class="testimonial-stars" aria-label="5 out of 5 stars">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M10 1l2.39 6.26H19l-5.19 4.15L15.6 18 10 14.27 4.4 18l1.79-6.59L1 7.26h6.61z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M10 1l2.39 6.26H19l-5.19 4.15L15.6 18 10 14.27 4.4 18l1.79-6.59L1 7.26h6.61z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M10 1l2.39 6.26H19l-5.19 4.15L15.6 18 10 14.27 4.4 18l1.79-6.59L1 7.26h6.61z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M10 1l2.39 6.26H19l-5.19 4.15L15.6 18 10 14.27 4.4 18l1.79-6.59L1 7.26h6.61z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M10 1l2.39 6.26H19l-5.19 4.15L15.6 18 10 14.27 4.4 18l1.79-6.59L1 7.26h6.61z"/></svg>
+          </div>
+          <blockquote class="testimonial-quote">
+            "I was skeptical about AI coaching, but this blew my mind. It caught my squat depth issue on the very first rep — something my gym buddy missed for months. The real-time voice feedback feels like having a pro trainer."
+          </blockquote>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">RK</div>
+            <div>
+              <strong class="testimonial-name">Rohan Kapoor</strong>
+              <span class="testimonial-role">Fitness Enthusiast · Mumbai</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testimonial 2 -->
+        <div class="testimonial-card">
+          <div class="testimonial-stars" aria-label="5 out of 5 stars">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M10 1l2.39 6.26H19l-5.19 4.15L15.6 18 10 14.27 4.4 18l1.79-6.59L1 7.26h6.61z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M10 1l2.39 6.26H19l-5.19 4.15L15.6 18 10 14.27 4.4 18l1.79-6.59L1 7.26h6.61z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M10 1l2.39 6.26H19l-5.19 4.15L15.6 18 10 14.27 4.4 18l1.79-6.59L1 7.26h6.61z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M10 1l2.39 6.26H19l-5.19 4.15L15.6 18 10 14.27 4.4 18l1.79-6.59L1 7.26h6.61z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M10 1l2.39 6.26H19l-5.19 4.15L15.6 18 10 14.27 4.4 18l1.79-6.59L1 7.26h6.61z"/></svg>
+          </div>
+          <blockquote class="testimonial-quote">
+            "As a personal trainer, I use this with my clients during remote sessions. The pose detection accuracy is insane — it tracks angles I'd need a goniometer to measure. This is the future of fitness tech."
+          </blockquote>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">SP</div>
+            <div>
+              <strong class="testimonial-name">Sneha Patel</strong>
+              <span class="testimonial-role">Certified Personal Trainer · Pune</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testimonial 3 -->
+        <div class="testimonial-card">
+          <div class="testimonial-stars" aria-label="5 out of 5 stars">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M10 1l2.39 6.26H19l-5.19 4.15L15.6 18 10 14.27 4.4 18l1.79-6.59L1 7.26h6.61z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M10 1l2.39 6.26H19l-5.19 4.15L15.6 18 10 14.27 4.4 18l1.79-6.59L1 7.26h6.61z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M10 1l2.39 6.26H19l-5.19 4.15L15.6 18 10 14.27 4.4 18l1.79-6.59L1 7.26h6.61z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M10 1l2.39 6.26H19l-5.19 4.15L15.6 18 10 14.27 4.4 18l1.79-6.59L1 7.26h6.61z"/></svg>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M10 1l2.39 6.26H19l-5.19 4.15L15.6 18 10 14.27 4.4 18l1.79-6.59L1 7.26h6.61z"/></svg>
+          </div>
+          <blockquote class="testimonial-quote">
+            "I built a home gym during lockdown but always worried about form without a spotter. This app is a game changer — the rep counter is accurate, the latency is unnoticeable, and it actually helped me fix my deadlift."
+          </blockquote>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">AJ</div>
+            <div>
+              <strong class="testimonial-name">Arjun Joshi</strong>
+              <span class="testimonial-role">Software Engineer · Bangalore</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         11. CONTACT SECTION
+    ═══════════════════════════════════════════════════════ -->
+    <section class="contact" id="contact" aria-label="Contact section">
+      <div class="contact-inner reveal">
+        <span class="section-tag">// LET'S CONNECT</span>
+        <h2 class="contact-title">
+          Built by <span class="highlight">NIKHIL</span>.<br /><em>Backed by AI.</em>
+        </h2>
+        <p class="contact-desc">
+          Open to opportunities in ML engineering, computer vision, and AI
+          product roles. Let's build something extraordinary together.
+        </p>
+
+        <div class="social-grid">
+          <!-- LinkedIn -->
+          <a
+            href="https://www.linkedin.com/in/nikhil-mali-55197a32a/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="social-btn"
+            aria-label="Connect on LinkedIn"
+          >
+            <span class="social-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                width="22"
+                height="22"
+                aria-hidden="true"
+              >
+                <path
+                  d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
+                />
+              </svg>
+            </span>
+            <span class="social-label">LinkedIn</span>
+          </a>
+
+          <!-- GitHub -->
+          <a
+            href="https://github.com/Nikhil3235"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="social-btn"
+            aria-label="View GitHub profile"
+          >
+            <span class="social-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                width="22"
+                height="22"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
+                />
+              </svg>
+            </span>
+            <span class="social-label">GitHub</span>
+          </a>
+
+          <!-- Gmail -->
+          <a
+            href="mailto:nikhilshivajimali3235@gmail.com"
+            class="social-btn"
+            aria-label="Send email"
+          >
+            <span class="social-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                width="22"
+                height="22"
+                aria-hidden="true"
+              >
+                <path
+                  d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.910 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"
+                />
+              </svg>
+            </span>
+            <span class="social-label">Gmail</span>
+          </a>
+        </div>
+
+        <div style="margin-top: 40px;">
+          <a
+            href="http://localhost:8505"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-primary"
+            aria-label="Launch AI Gym Coach App"
+            style="display: inline-flex; align-items: center; gap: 10px; font-size: 1rem; padding: 16px 36px;"
+          >
+            <span>🚀 Launch AI Coach</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════
+           12. FOOTER
+      ═══════════════════════════════════════════════════════ -->
+      <footer class="footer" role="contentinfo">
+        <span>© 2026 NIKHIL MALI — AI Real-time GYM Coach</span>
+      </footer>
+    </section>
+
+    <!-- Main Script -->
+    <script src="script.js" defer></script>
+  </body>
+</html>

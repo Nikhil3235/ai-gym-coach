@@ -1,0 +1,684 @@
+Connect Voice Feedback 
+
+
+######################################################################
+services/vision/exercise_video_processor.py
+######################################################################
+
+import os
+import cv2
+import av
+import numpy as np
+import mediapipe as mp
+import threading
+from streamlit_webrtc import VideoProcessorBase
+from mediapipe.tasks import python
+from mediapipe.tasks.python import vision
+from detectors.squat import SquatDetector
+from detectors.pushup import PushUpDetector
+from detectors.biceps_curl import BicepsCurlDetector
+from detectors.shoulder_press import ShoulderPressDetector
+from detectors.lunges import LungesDetector
+from services.config.workout_config import POSE_CONNECTIONS
+
+
+class VideoProcessorClass(VideoProcessorBase):
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._latest_metrics = None
+        self._exercise_type = "Squats"
+
+        model_path = os.path.join(os.getcwd(), "ml_models", "pose_landmarker_full.task")
+        base_option = python.BaseOptions(model_asset_path=model_path)
+
+        options = vision.PoseLandmarkerOptions(
+            base_options=base_option,
+            running_mode=vision.RunningMode.VIDEO,
+            min_pose_detection_confidence=0.7,
+            min_pose_presence_confidence=0.7,
+            min_tracking_confidence=0.7,
+            output_segmentation_masks=False
+        )
+
+        self._landmarker = vision.PoseLandmarker.create_from_options(options)
+
+        self._detectors = {
+            "Squats": SquatDetector(),
+            "Push-ups": PushUpDetector(),
+            "Biceps Curls (Dumbbell)": BicepsCurlDetector(),
+            "Shoulder Press": ShoulderPressDetector(),
+            "Lunges": LungesDetector(),
+        }
+
+        self._frame_timestamps_ms = 0
+    
+    def set_latest_metrics(self, metrics):
+        with self._lock:
+            self._latest_metrics = metrics.copy()
+
+    def get_latest_metrics(self):
+        with self._lock:
+            return None if self._latest_metrics is None else self._latest_metrics.copy()
+        
+    def set_exercise(self, exercise_type):
+        with self._lock:
+            self._exercise_type = exercise_type
+
+    def get_exercise(self):
+        with self._lock:
+            return self._exercise_type
+        
+    def _draw_skeleton(self, img, landmarks):
+        h, w = img.shape[:2]
+
+        for start_idx, end_idx in POSE_CONNECTIONS:
+            p1 = landmarks[start_idx]
+            p2 = landmarks[end_idx]
+
+            if p1.visibility > 0.7 and p2.visibility > 0.7:
+                cv2.line(
+                    img,
+                    (int(p1.x * w), int(p1.y * h)),
+                    (int(p2.x * w), int(p2.y * h)),
+                    (0, 255, 0),
+                    8
+                )
+        
+        for lm in landmarks:
+            if lm.visibility > 0.7:
+                cv2.circle(
+                    img, 
+                    (int(lm.x * w), int(lm.y * h)),
+                    8,
+                    (255, 0, 0),
+                    -1
+                )
+            
+    def _draw_no_pose_warnings(self, img):
+        cv2.putText(
+            img,
+            "NO POSE DETECTED",
+            (30, 50),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2,
+            cv2.LINE_AA,
+        )
+
+        cv2.putText(
+            img,
+            "PLEASE FACE THE CAMERA",
+            (30, 100),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2,
+            cv2.LINE_AA,
+        )
+
+    def _draw_overlays(self, img, metrics, ex_type):
+        if ex_type == "Squats":
+            self._draw_squats_overlays(img, metrics)
+        elif ex_type == "Push-ups":
+            self._draw_pushup_overlays(img, metrics)
+        elif ex_type == "Biceps Curls (Dumbbell)":
+            self._draw_curl_overlays(img, metrics)
+        elif ex_type == "Shoulder Press":
+            self._draw_press_overlays(img, metrics)
+        elif ex_type == "Lunges":
+            self._draw_lunge_overlays(img, metrics)
+
+
+    def _draw_squats_overlays(self, img, metrics):
+        h, _ = img.shape[:2]
+
+        cv2.putText(
+            img,
+            f"DEPTH: {metrics['depth_status']}",
+            (20, h - 20),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2,
+        )
+    
+    def _draw_pushup_overlays(self, img, metrics):
+        h, _ = img.shape[:2]
+
+        cv2.putText(
+            img,
+            f"BODY: {metrics['body_alignment']} | HIP: {metrics['hip_status']}",
+            (20, h - 20),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2,
+        )
+
+    def _draw_curl_overlays(self, img, metrics):
+        h, _ = img.shape[:2]
+
+        cv2.putText(
+            img,
+            f"SWING: {metrics['swing_status']}",
+            (20, h - 20),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2,
+        )
+
+    def _draw_press_overlays(self, img, metrics):
+        h, _ = img.shape[:2]
+
+        cv2.putText(
+            img,
+            f"EXT: {metrics['extension_status']} | BACK: {metrics['back_arch_status']}",
+            (20, h - 20),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2,
+        )
+
+    def _draw_lunge_overlays(self, img, metrics):
+        h, _ = img.shape[:2]
+
+        cv2.putText(
+            img,
+            f"BALANCE: {metrics['balance_status']}",
+            (20, h - 20),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2,
+        )
+
+    def recv(self, frame):
+        image = np.asarray(
+            cv2.flip(frame.to_ndarray(format="bgr24"), 1),
+            dtype=np.uint8
+        )
+
+        mp_image = mp.Image(
+            image_format=mp.ImageFormat.SRGB,
+            data=cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        )
+
+        self._frame_timestamps_ms += 30
+        result = self._landmarker.detect_for_video(mp_image, self._frame_timestamps_ms)
+
+        if result.pose_landmarks:
+            landmarks = result.pose_landmarks[0]
+
+            self._draw_skeleton(image, landmarks)
+
+            ex_type = self.get_exercise()
+
+            detector = self._detectors.get(ex_type)
+
+            if detector:
+                metrics = detector.process(landmarks)
+
+                metrics["pose_detected"] = True
+
+                self._draw_overlays(image, metrics, ex_type)
+
+                self.set_latest_metrics(metrics)
+        else:
+            self._draw_no_pose_warnings(image)
+            
+            with self._lock:
+                if self._latest_metrics is not None:
+                    self._latest_metrics["pose_detected"] = False
+                else:
+                    self._latest_metrics = {"pose_detected": False}
+
+        return av.VideoFrame.from_ndarray(image, format="bgr24")
+
+
+######################################################################
+services/tracking/metrics.py
+######################################################################
+
+import streamlit as st
+import time
+from services.config.workout_config import METRICS_FIELDS
+from services.persistence.exercise_repository import add_exercise
+
+
+def sync_metrics_update(context):
+    if not context or not hasattr(context, "state") or not context.state.playing:
+        return
+    
+    processor = getattr(context, "video_processor", None)
+
+    if not processor:
+        return 
+    
+    exercise = st.session_state.get("exercise_type")
+
+    if not exercise:
+        return
+    
+    processor.set_exercise(exercise)
+    latest_metrics = processor.get_latest_metrics()
+
+    if not latest_metrics:
+        return
+    
+    reps = latest_metrics.get("reps", 0)
+
+    if reps is None:
+        reps = 0
+        
+    st.session_state.reps = reps
+
+    fields = METRICS_FIELDS.get(exercise)
+
+    if not fields:
+        return 
+
+    for key, default in fields.items():
+        st.session_state[key] = latest_metrics.get(key, default)
+
+    reps_per_set = st.session_state.get("reps_per_set", 0)
+    target_sets = st.session_state.get("target_sets", 0)
+
+    if reps is not None and reps_per_set > 0 and target_sets > 0:
+        sets_completed = reps // reps_per_set
+        current_set_reps = reps % reps_per_set
+        workout_completed = sets_completed >= target_sets 
+    else:
+        sets_completed = 0
+        current_set_reps = 0
+        workout_completed = False
+
+    st.session_state.sets_completed = sets_completed
+    st.session_state.current_set_reps = current_set_reps
+    st.session_state.workout_completed = workout_completed
+
+    last_saved_sets = st.session_state.get("last_saved_sets_completed", 0)
+
+    if target_sets > 0 and reps_per_set > 0 and sets_completed > last_saved_sets:
+        newly_completed = sets_completed - last_saved_sets
+        now_ts = time.time()
+        started_at = st.session_state.get("set_cycle_started_at", now_ts)
+        time_taken = now_ts - started_at
+        user_id = st.session_state.get("user_id", 0)
+
+        add_exercise(user_id, exercise, newly_completed * reps_per_set, newly_completed, time_taken)
+
+        if st.session_state.get("voice_pipeline"):
+            result = st.session_state.voice_pipeline.process_event(
+                event="set_completed",
+                exercise=exercise,
+                metrics=latest_metrics,
+            )
+
+            if result:
+                st.session_state.audio_to_play, st.session_state.coach_feedback = result
+
+        st.session_state.set_cycle_started_at = now_ts
+        st.session_state.last_saved_sets_completed = sets_completed
+
+    if workout_completed and st.session_state.get("workout_started"):
+        st.session_state.workout_started = False
+
+        if st.session_state.get("voice_pipeline"):
+            result = st.session_state.voice_pipeline.process_event(
+                event="workout_completed",
+                exercise=exercise,
+                metrics=latest_metrics,
+            )
+
+            if result:
+                st.session_state.audio_to_play, st.session_state.coach_feedback = result
+                
+    pose_detected = latest_metrics.get("pose_detected", True)
+    
+    if not pose_detected and st.session_state.get("voice_pipeline") and not workout_completed:
+        result = st.session_state.voice_pipeline.process_event(
+            event="no_pose_detected",
+            exercise=exercise,
+            metrics={"issue": "No pose detected! Please step into the camera frame."},
+        )
+    
+        if result:
+            st.session_state.audio_to_play, st.session_state.coach_feedback = result
+
+    if st.session_state.get("voice_pipeline") and not workout_completed:
+        result = st.session_state.voice_pipeline.process_event(
+            event="ongoing_form_check",
+            exercise=exercise,
+            metrics=latest_metrics,
+        )
+        
+        if result:
+            st.session_state.audio_to_play, st.session_state.coach_feedback = result
+
+
+######################################################################
+main.py
+######################################################################
+
+import streamlit as st
+import os
+import time
+import pandas as pd
+from services.auth.login_wall import render_login_wall
+from services.state.session_defaults import initial_session_defaults
+from services.config.workout_config import EXERCISE_OPTIONS
+from services.ui.style_loader import load_css, inject_local_font, inject_webrtc_styles
+from services.persistence.exercise_repository import init_db
+from streamlit_webrtc import webrtc_streamer, WebRtcMode
+from services.vision.exercise_video_processor import VideoProcessorClass
+from services.tracking.metrics import sync_metrics_update
+from services.persistence.exercise_repository import get_users_exercises
+from groq import Groq
+from services.coaching.llm import LLMCoach
+from services.coaching.tts import TextToSpeech
+from services.coaching.voice_pipeline import VoicePipeline, autoplay_audio
+
+  
+def main():
+    st.set_page_config(
+        page_icon="🏋️‍♀️",
+        page_title="AI Real-time GYM Coach",
+        initial_sidebar_state="expanded",
+        layout="centered"
+    )
+
+    load_css(os.path.join(os.getcwd(), "static", "style.css"))
+    inject_local_font(os.path.join(os.getcwd(), "static", "AdobeClean.otf"), "AdobeClean")
+
+    init_db()
+
+    if not render_login_wall():
+        return 
+
+    initial_session_defaults()
+
+    if "voice_pipeline" not in st.session_state:
+        try:
+            api_key = os.environ.get("GROQ_API_KEY", "")
+
+            if not api_key and hasattr(st, "secrets") and "GROQ_API_KEY" in st.secrets:
+                api_key = st.secrets["GROQ_API_KEY"]
+            
+            groq_client = Groq(api_key=api_key)
+            llm_coach = LLMCoach(groq_client)
+            tts = TextToSpeech()
+            st.session_state.voice_pipeline = VoicePipeline(llm_coach, tts)
+        except Exception as e:
+            st.session_state.voice_pipeline = None
+
+    workout_started = st.session_state.get("workout_started", False)
+    
+    with st.sidebar:
+        st.title("🏋️‍♂️ Apna AI Coach")
+
+        if st.session_state.username:
+            st.caption(f"👤 Login as {st.session_state.username}")
+
+        st.divider()
+
+        st.subheader("Workout Plan")
+
+        if not workout_started:
+            plan_exercise = st.selectbox("Exercise", options=EXERCISE_OPTIONS, key="plan_exercise")
+
+            plan_sets = st.number_input("Sets", min_value=0, max_value=50, key="plan_sets", step=1)
+
+            plan_reps = st.number_input("Reps per Set", min_value=0, max_value=50, key="plan_reps", step=1)
+
+            st.markdown("")
+
+            start_session_button = st.button("Start Workout", width="stretch", key="start_session_button")
+
+            if start_session_button:
+                st.session_state.exercise_type = plan_exercise
+                st.session_state.target_sets = int(plan_sets)
+                st.session_state.reps_per_set = int(plan_reps)
+                st.session_state.reps = 0
+                st.session_state.workout_started = True
+                st.session_state.set_cycle_started_at = time.time()
+                st.session_state.last_saved_sets_completed = 0
+
+                if st.session_state.voice_pipeline:
+                    result = st.session_state.voice_pipeline.process_event(
+                        event="workout_started",
+                        exercise=plan_exercise,
+                        metrics={}
+                    )
+                    
+                    if result:
+                        st.session_state.audio_to_play, st.session_state.coach_feedback = result
+
+                st.session_state.last_notified_sets_completed = 0
+                st.session_state.last_notified_workout_complete = False
+                st.rerun()
+        else:
+            exercise = st.session_state.get("exercise_type")
+            sets = st.session_state.get("target_sets")
+            reps = st.session_state.get("reps_per_set")
+
+            st.info(f"**{exercise}** -- {sets} Sets / {reps} Reps")
+
+            end_session_button = st.button("End Workout", key="end_session_button", width="stretch")
+
+            if end_session_button:
+                st.session_state.workout_started = False
+                if st.session_state.voice_pipeline:
+                    result = st.session_state.voice_pipeline.process_event(
+                        event="workout_completed",
+                        exercise=exercise,
+                        metrics={}
+                    )
+                    if result:
+                        st.session_state.audio_to_play, st.session_state.coach_feedback = result
+                st.rerun()
+
+        if workout_started:
+            st.divider()
+
+            exercise = st.session_state.get("exercise_type")
+            total_reps = st.session_state.get("reps")
+            current_set_reps = st.session_state.get("current_set_reps")
+            reps_per_set = st.session_state.get("reps_per_set")
+            sets_completed = st.session_state.get("sets_completed")
+            target_sets = st.session_state.get("target_sets")
+
+            st.subheader("Progress")
+
+            st.metric("Total Reps", f"{total_reps}")
+            st.metric("Current Set Reps", f"{current_set_reps} / {reps_per_set}")
+            st.metric("Sets Completed", f"{sets_completed} / {target_sets}")
+
+            st.divider()
+
+            if exercise == "Squats":
+                st.subheader("Squat Metrics")
+                st.metric("Knee Angle", f"{st.session_state.knee_angle}°")
+                st.metric("Back Angle", f"{st.session_state.back_angle}°")
+                st.metric("Depth Status", st.session_state.depth_status)
+
+            elif exercise == "Push-ups":
+                st.subheader("Push-up Metrics")
+                st.metric("Elbow Angle", f"{st.session_state.elbow_angle}°")
+                st.metric("Body Alignment", st.session_state.body_alignment)
+                st.metric("Hip Position", st.session_state.hip_status)
+
+            elif exercise == "Biceps Curls (Dumbbell)":
+                st.subheader("Curl Metrics")
+                st.metric("Elbow Angle", f"{st.session_state.elbow_angle}°")
+                st.metric("Shoulder Stability", st.session_state.shoulder_status)
+                st.metric("Swing Detection", st.session_state.swing_status)
+
+            elif exercise == "Shoulder Press":
+                st.subheader("Shoulder Press Metrics")
+                st.metric("Elbow Angle", f"{st.session_state.elbow_angle}°")
+                st.metric("Arm Extension", st.session_state.extension_status)
+                st.metric("Back Arch", st.session_state.back_arch_status)
+
+            elif exercise == "Lunges":
+                st.subheader("Lunge Metrics")
+                st.metric("Front Knee Angle", f"{st.session_state.front_knee_angle}°")
+                st.metric("Torso Angle", f"{st.session_state.torso_angle}°")
+                st.metric("Balance Status", st.session_state.balance_status)
+
+    st.title("AI Real-time GYM Coach")
+    st.markdown("#### Real-time pose detection with proactive AI voice coaching")
+ 
+    if st.session_state.get("audio_to_play"):
+        autoplay_audio(st.session_state.audio_to_play)
+
+    if st.session_state.get("coach_feedback"):
+        st.markdown("")
+        st.success(f"🤖 **Coach:** {st.session_state.coach_feedback}")
+
+    if not workout_started:
+        st.markdown(
+            """
+            <div style="
+                border: 10px dashed #444;
+                border-radius: 0px;
+                padding: 48px 32px;
+                text-align: center;
+                color: #888;
+                margin-top: 32px;
+                margin-bottom: 32px;
+            ">
+                <h2 style="color:#ccc; margin-bottom:8px;">👈 Set your workout plan</h2>
+                <p style="font-size:1.05rem;">
+                    Choose your exercise, sets and reps in the sidebar,<br>
+                    then click <strong>Start Workout</strong> to activate the camera and AI coach.
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    else:
+        context = webrtc_streamer(
+            key="exercise-analysis",
+            mode=WebRtcMode.SENDRECV,
+            video_processor_factory=VideoProcessorClass,
+            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+            media_stream_constraints={
+                "video": True,
+                "audio": False
+            },
+            async_processing=True
+        )
+
+        sync_metrics_update(context)
+
+        if context.state.playing:
+            time.sleep(0.25)
+            st.rerun()
+
+        inject_webrtc_styles()
+
+    st.divider()
+
+    st.markdown("#### Workout History")
+
+    user_id = st.session_state.get("user_id", 0)
+
+    if isinstance(user_id, int):
+        history_rows = get_users_exercises(user_id)
+
+        arr = [
+            {
+                "Exercise": row['exercise_name'],
+                "Reps": row['reps'],
+                "Sets": row['sets'],
+                "Time (sec)": row['time'],
+                "Date": row['created_at']
+            }
+            for row in history_rows
+        ]
+
+        df = pd.DataFrame(arr)
+
+        if not df.empty:
+            df["Date"] = pd.to_datetime(df["Date"]).dt.date
+            agg_df = df.groupby(["Exercise", "Date"]).agg({
+                "Reps": 'sum',
+                "Sets": "sum",
+                "Time (sec)": "sum"
+            }).reset_index()
+            agg_df.index += 1
+            st.table(agg_df, border="horizontal")
+        else:
+            st.info("No workout history found.")
+
+
+if __name__ == "__main__":
+    main()
+    
+
+######################################################################
+services/config/workout_config.py
+######################################################################
+
+PROMPT = (
+    "You are Apna AI Coach, a professional AI gym trainer monitoring a user's workout via live camera.\n\n"
+    "### Your Role\n"
+    "Provide ultra-brief, high-energy coaching cues. You speak these aloud, so they must be clear and direct.\n\n"
+    "### Input Format\n"
+    "You receive updates in the format: 'Event: [state] Form Issue: [description]'.\n"
+    "- 'Event': workout_started, set_completed, workout_completed, no_pose_detected, ongoing_form_check.\n"
+    "- 'Form Issue': A technical description of a pose error (if any).\n\n"
+    "### Strict Response Rules\n"
+    "1. MAXIMUM ONE SENTENCE. Keep it under 12 words. Total brevity is critical.\n"
+    "2. NO GREETINGS OR QUESTIONS. Never say 'Hello', 'Ready?', or 'How are you?'.\n"
+    "3. SECOND PERSON. Convert 'The user is leaning' to 'Keep your back straight'.\n"
+    "4. NO EMOJIS. NO EXPLANATIONS. Just the cue or encouragement.\n\n"
+    "### Scenario Guidelines\n"
+    "- 'workout_started' -> A sharp, motivational start command.\n"
+    "- 'workout_completed' -> A brief closing congratulation.\n"
+    "- 'set_completed' -> A quick word of praise for the finished set.\n"
+    "- 'no_pose_detected' -> Instruct the user to step back into the frame.\n"
+    "- 'ongoing_form_check' + Form Issue -> Direct correction based on the issue.\n"
+    "- 'ongoing_form_check' (No Issue) -> Brief motivating encouragement.\n\n"
+    "Maintain a professional coaching tone and prioritize safety."
+)
+
+
+######################################################################
+services/config/workout_config.py
+######################################################################
+
+from services.config.workout_config import PROMPT
+
+
+class LLMCoach:
+    def __init__(self, groq_client):
+        self.client = groq_client
+        self.history = []
+        self.system_prompt = PROMPT
+        
+    def give_feedback(self, event, issue):
+        prompt = f"Event: {event}"
+        
+        if issue:
+            prompt += f" Form Issue: {issue}"
+
+        messages = [
+            {"role": "system", "content": self.system_prompt},
+            *self.history[-10:],
+            {"role": "user", "content": prompt},
+        ]
+
+        response = self.client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=messages,
+            temperature=0.4,
+        )
+
+        text = response.choices[0].message.content.strip()
+        self.history.append({"role": "assistant", "content": text})
+        
+        return text
