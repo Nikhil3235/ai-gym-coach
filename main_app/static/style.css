@@ -486,6 +486,50 @@ p, li, code {
   border-color: var(--border-hover) !important;
 }
 
+/* Force black text for number inputs since their background is white/light */
+[data-testid="stNumberInputContainer"] input {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+/* ── Start Workout Button Styling (st-key-start_session_button) ── */
+div.st-key-start_session_button button {
+  width: 100% !important;
+  padding: 14px 28px !important;
+  font-size: 1.1rem !important;
+  font-weight: 800 !important;
+  font-family: var(--font-display) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.12em !important;
+  color: #ffffff !important;
+  background: rgba(12, 12, 20, 0.7) !important;
+  border: 2px solid var(--amber) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 10px rgba(245, 166, 35, 0.15) !important;
+  transition: all var(--transition) !important;
+  cursor: pointer !important;
+  position: relative;
+  overflow: hidden;
+}
+
+div.st-key-start_session_button button:hover {
+  color: #000000 !important;
+  background: linear-gradient(135deg, var(--amber) 0%, var(--amber-light) 50%, #ffb347 100%) !important;
+  border-color: var(--amber-light) !important;
+  transform: translateY(-4px) scale(1.02) !important;
+  box-shadow: 
+    0 15px 45px rgba(245, 166, 35, 0.5), 
+    0 0 80px rgba(245, 166, 35, 0.35), 
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  text-shadow: none !important;
+}
+
+div.st-key-start_session_button button:active {
+  transform: translateY(-1px) scale(0.98) !important;
+}
+
+
 /* ═══════════════════════════════════════════════════════════════
    METRICS — 3D glassmorphism cards with animated accents
 ═══════════════════════════════════════════════════════════════ */
