@@ -33,7 +33,8 @@ def inject_local_font(font_path, font_name):
     """, unsafe_allow_html=True)
 
 def inject_webrtc_styles():
-    font_path = os.path.join(os.getcwd(), "static", "AdobeClean.otf")
+    _APP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    font_path = os.path.join(_APP_DIR, "static", "AdobeClean.otf")
     
     if not os.path.exists(font_path):
         return

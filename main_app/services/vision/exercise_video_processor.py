@@ -30,7 +30,8 @@ class VideoProcessorClass(VideoProcessorBase):
         self._last_stage = None
         self._stage_changed_at = None
 
-        model_path = os.path.join(os.getcwd(), "ml_models", "pose_landmarker_full.task")
+        _APP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        model_path = os.path.join(_APP_DIR, "ml_models", "pose_landmarker_full.task")
         base_option = python.BaseOptions(model_asset_path=model_path)
 
         options = vision.PoseLandmarkerOptions(
