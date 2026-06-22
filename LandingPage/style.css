@@ -1406,9 +1406,9 @@ section {
 .video-container video,
 .video-container iframe {
   width: 100%;
-  aspect-ratio: 16/9;
+  height: auto;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
   transition: filter var(--transition);
 }
 
