@@ -18,6 +18,3 @@ main_app/data.db
 
 # Logs
 *.log
-
-# Large media files
-LandingPage/videos_add_your_own/*.mp4
