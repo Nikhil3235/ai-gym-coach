@@ -382,6 +382,70 @@ textarea,
   transition: all var(--transition) !important;
 }
 
+/* ── Dropdown menu panel — premium glass ── */
+[data-baseweb="popover"] {
+  background: rgba(8, 8, 16, 0.97) !important;
+  border: 1px solid rgba(245,166,35,0.2) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 20px rgba(245,166,35,0.06) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+/* Dropdown list container */
+[data-baseweb="menu"] ul,
+[data-baseweb="popover"] ul {
+  background: transparent !important;
+  padding: 6px !important;
+}
+
+/* Each dropdown item — visible & glowing */
+[data-baseweb="menu"] li,
+[data-baseweb="popover"] li,
+div[role="option"],
+[data-baseweb="menu"] [role="option"] {
+  color: var(--text) !important;
+  font-family: var(--font-body) !important;
+  font-size: 0.88rem !important;
+  font-weight: 500 !important;
+  padding: 10px 16px !important;
+  border-radius: 8px !important;
+  margin: 2px 0 !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+}
+
+/* Dropdown item hover — amber glow */
+[data-baseweb="menu"] li:hover,
+[data-baseweb="popover"] li:hover,
+div[role="option"]:hover,
+[data-baseweb="menu"] [role="option"]:hover {
+  background: rgba(245,166,35,0.12) !important;
+  color: var(--amber-light) !important;
+  text-shadow: 0 0 8px var(--amber-glow) !important;
+  padding-left: 22px !important;
+}
+
+/* Dropdown item selected/highlighted — amber accent */
+[data-baseweb="menu"] li[aria-selected="true"],
+[data-baseweb="popover"] li[aria-selected="true"],
+div[role="option"][aria-selected="true"],
+[data-baseweb="menu"] [role="option"][aria-selected="true"],
+[data-baseweb="menu"] li[data-highlighted="true"],
+[data-baseweb="popover"] li[data-highlighted="true"] {
+  background: rgba(245,166,35,0.15) !important;
+  color: var(--amber) !important;
+  font-weight: 600 !important;
+  border-left: 3px solid var(--amber) !important;
+  text-shadow: 0 0 10px var(--amber-glow) !important;
+}
+
+/* Dropdown selected text in the box */
+[data-baseweb="select"] span,
+[data-baseweb="select"] [data-testid="stMarkdownContainer"] p {
+  color: var(--amber-light) !important;
+  font-weight: 500 !important;
+}
+
 input:focus,
 textarea:focus {
   border-color: var(--amber) !important;
