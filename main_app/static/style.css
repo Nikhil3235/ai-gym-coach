@@ -829,17 +829,112 @@ video {
    SIDEBAR — Subheader & Metrics polish
 ═══════════════════════════════════════════════════════════════ */
 
+/* Sidebar subheader (Workout Plan) — shiny gold with glow */
 [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h3 {
   color: var(--amber) !important;
   font-family: var(--font-display) !important;
-  font-size: 0.7rem !important;
-  font-weight: 600 !important;
+  font-size: 0.8rem !important;
+  font-weight: 700 !important;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.18em;
+  background: linear-gradient(90deg, var(--amber-dim), var(--amber), var(--amber-light), #fff8e7, var(--amber-light), var(--amber), var(--amber-dim));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shiny-text-slide 3s linear infinite;
+  text-shadow: 0 0 15px var(--amber-glow);
+}
+
+@keyframes shiny-text-slide {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
 }
 
 [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h3::after {
   display: none;
+}
+
+/* Sidebar ALL widget labels — glowing amber */
+[data-testid="stSidebar"] .stSelectbox label p,
+[data-testid="stSidebar"] .stNumberInput label p,
+[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
+[data-testid="stSidebar"] label p {
+  color: var(--amber-light) !important;
+  font-family: var(--font-display) !important;
+  font-weight: 600 !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  text-shadow: 0 0 8px var(--amber-glow), 0 0 16px rgba(245,166,35,0.08) !important;
+}
+
+/* Sidebar caption (Login as NIKHIL) — shiny badge */
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
+  color: var(--amber) !important;
+  font-weight: 600 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  background: linear-gradient(90deg, var(--amber-dim), var(--amber-light), #fff8e7, var(--amber-light), var(--amber-dim));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shiny-text-slide 4s linear infinite;
+  padding: 6px 14px !important;
+  border: 1px solid rgba(245,166,35,0.25) !important;
+  border-radius: 20px !important;
+  display: inline-block !important;
+}
+
+/* Sidebar selectbox dropdown — glass style */
+[data-testid="stSidebar"] [data-testid="stSelectbox"] > div > div {
+  background: rgba(245,166,35,0.04) !important;
+  border: 1px solid rgba(245,166,35,0.15) !important;
+  border-radius: 10px !important;
+  color: var(--amber-light) !important;
+  transition: all var(--transition) !important;
+}
+[data-testid="stSidebar"] [data-testid="stSelectbox"] > div > div:hover,
+[data-testid="stSidebar"] [data-testid="stSelectbox"] > div > div:focus-within {
+  border-color: var(--amber) !important;
+  box-shadow: 0 0 12px var(--amber-glow), inset 0 0 8px rgba(245,166,35,0.04) !important;
+}
+
+/* Sidebar number input — glass style */
+[data-testid="stSidebar"] [data-testid="stNumberInput"] input {
+  background: rgba(245,166,35,0.04) !important;
+  border: 1px solid rgba(245,166,35,0.15) !important;
+  border-radius: 10px !important;
+  color: var(--amber-light) !important;
+  font-weight: 600 !important;
+  transition: all var(--transition) !important;
+}
+[data-testid="stSidebar"] [data-testid="stNumberInput"] input:hover,
+[data-testid="stSidebar"] [data-testid="stNumberInput"] input:focus {
+  border-color: var(--amber) !important;
+  box-shadow: 0 0 12px var(--amber-glow) !important;
+}
+
+/* Sidebar number input +/- buttons — amber glow */
+[data-testid="stSidebar"] [data-testid="stNumberInput"] button {
+  border-color: rgba(245,166,35,0.2) !important;
+  color: var(--amber) !important;
+  transition: all var(--transition) !important;
+}
+[data-testid="stSidebar"] [data-testid="stNumberInput"] button:hover {
+  background: rgba(245,166,35,0.1) !important;
+  border-color: var(--amber) !important;
+  box-shadow: 0 0 10px var(--amber-glow) !important;
+}
+
+/* Sidebar divider — amber gradient line */
+[data-testid="stSidebar"] hr {
+  border: none !important;
+  height: 1px !important;
+  background: linear-gradient(90deg, transparent, var(--amber-dim), var(--amber), var(--amber-dim), transparent) !important;
+  opacity: 0.5 !important;
 }
 
 /* Sidebar metrics — subtle glass cards */
