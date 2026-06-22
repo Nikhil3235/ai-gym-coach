@@ -76,7 +76,7 @@
           <a href="#how-it-works" class="nav-link" data-section="how-it-works">How It Works</a>
           <a href="#gallery" class="nav-link" data-section="gallery">Gallery</a>
           <a href="#exercises" class="nav-link" data-section="exercises">Exercises</a>
-
+          <a href="#demo" class="nav-link" data-section="demo">Demo</a>
           <a href="#tech-stack" class="nav-link" data-section="tech-stack">Tech Stack</a>
           <a href="#contact" class="nav-link" data-section="contact">Contact</a>
         </div>
@@ -96,7 +96,7 @@
           <a href="#how-it-works" class="mobile-link" data-section="how-it-works">How It Works</a>
           <a href="#gallery" class="mobile-link" data-section="gallery">Gallery</a>
           <a href="#exercises" class="mobile-link" data-section="exercises">Exercises</a>
-
+          <a href="#demo" class="mobile-link" data-section="demo">Demo</a>
           <a href="#tech-stack" class="mobile-link" data-section="tech-stack">Tech Stack</a>
           <a href="#contact" class="mobile-link" data-section="contact">Contact</a>
         </div>
@@ -541,6 +541,61 @@
           <div class="exercise-metrics">
             <span>Knee angle · Step depth · Balance tracking</span>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         8. DEMO VIDEO SECTION
+    ═══════════════════════════════════════════════════════ -->
+    <section class="demo" id="demo" aria-label="Demo Video">
+      <div class="section-header center-header reveal">
+        <span class="section-tag">// PRODUCT IN ACTION</span>
+        <h2 class="section-title">See the AI coach in <em>real-time</em></h2>
+        <p class="section-desc">
+          Watch our high-precision computer vision pipeline analyze gym form, track repetitions, and provide instant corrective voice feedback.
+        </p>
+      </div>
+
+      <div class="demo-wrapper reveal" data-tilt>
+        <div class="video-container">
+          <!-- Corners -->
+          <div class="corner corner--tl"></div>
+          <div class="corner corner--tr"></div>
+          <div class="corner corner--bl"></div>
+          <div class="corner corner--br"></div>
+
+          <!-- Status Badge -->
+          <div class="demo-status">
+            <span class="pulse"></span>
+            Live Workout Demo
+          </div>
+
+          <!-- Video Player -->
+          <video src="videos_add_your_own/demo_workout.mp4" controls playsinline preload="metadata" poster="./IMGs_add_your_own/i1.png"></video>
+        </div>
+      </div>
+
+      <div class="feature-row reveal">
+        <div class="feature-cell" data-tilt>
+          <div class="feature-icon">🔍</div>
+          <h3 class="feature-title">Pose Detection</h3>
+          <p class="feature-desc">Sub-millisecond tracking of 33 key skeleton joint coordinates using MediaPipe.</p>
+        </div>
+        <div class="feature-cell" data-tilt>
+          <div class="feature-icon">🗣️</div>
+          <h3 class="feature-title">Voice Coaching</h3>
+          <p class="feature-desc">AI-generated speech suggestions delivered instantly to correct improper form.</p>
+        </div>
+        <div class="feature-cell" data-tilt>
+          <div class="feature-icon">🔢</div>
+          <h3 class="feature-title">Rep Counter</h3>
+          <p class="feature-desc">Automatic detection of complete range-of-motion repetitions with status reporting.</p>
+        </div>
+        <div class="feature-cell" data-tilt>
+          <div class="feature-icon">⚡</div>
+          <h3 class="feature-title">Real-time Performance</h3>
+          <p class="feature-desc">Extremely low-latency inference ensuring immediate voice response during workouts.</p>
         </div>
       </div>
     </section>
