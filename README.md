@@ -8,6 +8,12 @@
 
 An ultra-premium, real-time AI-powered personal gym coach application. This project showcases advanced **Computer Vision**, **Biomechanical Mathematics**, and **Asynchronous AI Pipelines** to monitor exercise form, count repetitions, and deliver instant corrective voice feedback in multiple languages.
 
+## 🌐 Live Demo
+
+Experience the project live:
+* **🚀 Deployed Streamlit Web App (AI Coach):** [https://ai-gym-coach-fgsctzk7pvnsrypw8qzrev.streamlit.app/](https://ai-gym-coach-fgsctzk7pvnsrypw8qzrev.streamlit.app/)
+* **✨ Live Landing Page:** [https://nikhil3235.github.io/ai-gym-coach/](https://nikhil3235.github.io/ai-gym-coach/)
+
 ---
 
 ## 🛠️ Developer Skills Showcased
