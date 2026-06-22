@@ -218,9 +218,25 @@ def main():
             key="exercise-analysis",
             mode=WebRtcMode.SENDRECV,
             video_processor_factory=VideoProcessorClass,
-            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+            rtc_configuration={
+                "iceServers": [
+                    {
+                        "urls": [
+                            "stun:stun.l.google.com:19302",
+                            "stun:stun1.l.google.com:19302",
+                            "stun:stun2.l.google.com:19302",
+                            "stun:stun3.l.google.com:19302",
+                            "stun:stun4.l.google.com:19302"
+                        ]
+                    }
+                ]
+            },
             media_stream_constraints={
-                "video": True,
+                "video": {
+                    "facingMode": "user",
+                    "width": {"ideal": 640},
+                    "height": {"ideal": 480}
+                },
                 "audio": False
             },
             async_processing=True
