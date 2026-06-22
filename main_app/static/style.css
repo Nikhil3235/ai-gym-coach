@@ -384,18 +384,30 @@ textarea,
 
 /* ── Dropdown menu panel — premium glass ── */
 [data-baseweb="popover"] {
-  background: rgba(8, 8, 16, 0.97) !important;
-  border: 1px solid rgba(245,166,35,0.2) !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.65), 0 0 30px rgba(245,166,35,0.1) !important;
+}
+
+[data-baseweb="popover"] > div {
+  background: #080810 !important;
+  background-color: #080810 !important;
+  border: 1px solid rgba(245,166,35,0.25) !important;
   border-radius: var(--radius) !important;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 20px rgba(245,166,35,0.06) !important;
-  backdrop-filter: blur(16px) !important;
+  backdrop-filter: blur(20px) !important;
+  padding: 4px !important;
 }
 
 /* Dropdown list container */
 [data-baseweb="menu"] ul,
-[data-baseweb="popover"] ul {
+[data-baseweb="popover"] ul,
+[data-baseweb="menu"],
+[role="listbox"] {
   background: transparent !important;
+  background-color: transparent !important;
   padding: 6px !important;
+  border: none !important;
 }
 
 /* Each dropdown item — visible & glowing */
