@@ -161,4 +161,4 @@ GROQ_API_KEY="your_groq_api_key_here"
 ## 📄 License
 This project is for educational and portfolio demonstration purposes.
 
-Developed with ❤️ by [Nikhil Mali](https://github.com/Nikhil3235)
+Developed with ❤️ by [Nikhil Mali](https://github.com/Nikhil3235) for fitness enthusiasts
